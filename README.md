@@ -35,8 +35,3 @@ The project uses the following external libraries (included in `/libs/`):
 - **ImGui** - UI framework
 - **Lua/Sol2** - Scripting support
 
-
-## License
-
-[Add your license information here]
-
