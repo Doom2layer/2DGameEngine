@@ -1,0 +1,49 @@
+﻿# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# C++ source files
+*.cpp text eol=lf
+*.h text eol=lf
+*.hpp text eol=lf
+*.c text eol=lf
+
+# Lua scripts
+*.lua text eol=lf
+
+# Image files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+
+# Audio files
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.flac binary
+
+# Data files
+*.map binary
+*.json text eol=lf
+*.xml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Font files
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+
+# Solutions and project files
+*.sln text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.slnx text eol=crlf
+
+# Documentation
+*.md text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+

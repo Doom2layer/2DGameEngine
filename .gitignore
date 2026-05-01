@@ -1,0 +1,79 @@
+﻿# Visual Studio directories
+.vs/
+.vscode/
+.idea/
+
+# Visual Studio user settings
+*.user
+*.VC.db
+*.VC.db-shm
+*.VC.db-wal
+
+# Build directories
+Debug/
+Release/
+x64/
+Win32/
+bin/
+obj/
+
+# Object files and compiled files
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+
+# Intermediate build files
+*.ilk
+*.pdb
+*.idb
+*.tlog
+*.log
+
+# Dependency directories (optional - uncomment if committing your own builds)
+# libs/
+
+# Build artifacts
+*.recipe
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.lnk
+
+# IDE artifacts
+*.ncb
+*.suo
+*.sln.docstates
+
+# Lua/scripting temporary files
+*.luac
+
+# Asset cache files
+.assetcache/
+*.cache
+
+# Any local development overrides
+local.properties
+config.local.h
+
