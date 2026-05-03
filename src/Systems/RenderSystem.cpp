@@ -12,7 +12,7 @@ RenderSystem::RenderSystem()
     RequireComponent<FSpriteComponent>();
 }
 
-void RenderSystem::Update(SDL_Renderer* Renderer)
+void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetManager>& AssetManagerInstance)
 {
     // Loop all the entities that the system is interested in
     for (const Entity& InEntity : GetSystemEntities())
@@ -20,15 +20,18 @@ void RenderSystem::Update(SDL_Renderer* Renderer)
         FTransformComponent& Transform = InEntity.GetComponent<FTransformComponent>();
         const FSpriteComponent& Sprite = InEntity.GetComponent<FSpriteComponent>();
         
-        SDL_Rect RenderRect = {
-            static_cast<int>(Transform.Position.x),
-            static_cast<int>(Transform.Position.y),
-            Sprite.Width,
-            Sprite.Height
+        // Set the source rectangle of our original sprite texture
+        SDL_Rect SourceRect = Sprite.SourceRectangle;
+        
+        // Set the destination rectangle with the x,y position to be rendered
+        SDL_Rect DestinationRect = {
+            static_cast<int>(Transform.Position.x), 
+            static_cast<int>(Transform.Position.y), 
+            static_cast<int>(Sprite.SourceRectangle.w * Transform.Scale.x), 
+            static_cast<int>(Sprite.SourceRectangle.h * Transform.Scale.y)
         };
         
-        SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255); // Set color to red
-        SDL_RenderFillRect(Renderer, &RenderRect);
+        SDL_RenderCopyEx(Renderer, AssetManagerInstance->GetTexture(Sprite.AssetID), &SourceRect, &DestinationRect, Transform.Rotation, NULL, SDL_FLIP_NONE);
         
     }
 }

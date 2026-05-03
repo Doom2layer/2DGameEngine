@@ -1,12 +1,20 @@
 ﻿#pragma once
+#include <SDL_rect.h>
+
 #include "../ECS/ECS.h"
-#include "glm/vec2.hpp"
 
 struct FSpriteComponent : public Component<FSpriteComponent>
 {
-    int Width;
-    int Height;
-    
-    FSpriteComponent(int InWidth = 0, int InHeight = 0) : Width(InWidth), Height(InHeight){}
-    
+    std::string AssetID;
+    SDL_Rect SourceRectangle;
+
+    FSpriteComponent(
+        const std::string& InAssetID = "",
+        int InWidth = 0,
+        int InHeight = 0,
+        int InSourceX = 0,
+        int InSourceY = 0)
+        : AssetID(InAssetID)
+        , SourceRectangle({InSourceX, InSourceY, InWidth, InHeight})
+    {}
 };

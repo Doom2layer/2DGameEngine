@@ -358,7 +358,9 @@ TComponent& ECSManager::GetComponent(Entity InEntity) const
         throw std::runtime_error("Entity does not have component.");
     }
 
+    /*
     Logger::Log("Component ID = " + std::to_string(ComponentID) + " retrieved from Entity ID = " + std::to_string(EntityID));
+    */
 
     return std::static_pointer_cast<Pool<TComponent>>(ComponentPools[ComponentID])->Get(EntityID);
 }

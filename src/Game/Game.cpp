@@ -10,12 +10,12 @@
 
 #include <SDL.h>
 #include <glm/glm.hpp>
+#include <fstream>
 
 
 Game::Game()
 {
     bIsRunning = false;
-    Manager = std::make_unique<ECSManager>();
     Logger::Log("Game::Game() Called Game Object Constructor Called");
 }
 
@@ -49,6 +49,16 @@ void Game::Initialize()
     
     if (!Renderer)
     {
+        Logger::Error("Game::Initialize failed to create renderer.");
+        return;
+    }
+    
+    ECSManagerInstance = std::make_unique<ECSManager>();
+    AssetManagerInstance = std::make_unique<AssetManager>(Renderer);
+
+    
+    if (!Renderer)
+    {
         Logger::Error("SDL_CreateRenderer failed: " + std::string(SDL_GetError()));
         return;   
     }
@@ -58,23 +68,64 @@ void Game::Initialize()
     bIsRunning = true;
 }
 
-void Game::Setup()
+void Game::LoadLevel(int LevelNumber)
 {
-    //Todo: Initialize game objects ...
-    //Create Entity ECSManager.CreateEntity();    
-    Manager->AddSystem<MovementSystem>();
-    Manager->AddSystem<RenderSystem>();
+    // Add the system that need to be processed in the game
+    ECSManagerInstance->AddSystem<MovementSystem>();
+    ECSManagerInstance->AddSystem<RenderSystem>();
+    
+    // Adding assets to the asset manager
+    AssetManagerInstance->AddTexture("Tank-Image", "./assets/images/tank-panther-right.png");
+    AssetManagerInstance->AddTexture("Truck-Image", "./assets/images/truck-ford-right.png");
+    AssetManagerInstance->AddTexture("Jungle-Tilemap-Image", "./assets/tilemaps/jungle.png");
+    
+    //Load the tile map
+    constexpr int TileSize =32;
+    constexpr double TileScale = 1;
+    constexpr int MapNumberColumns = 25;
+    constexpr int MapNumberRows = 20;
+    std::fstream MapFile;
+    MapFile.open("./assets/tilemaps/jungle.map");
+    if (!MapFile.is_open())
+    {
+        Logger::Error("Failed to open map file.");
+        return;
+    }
+    
+    for (int y = 0; y < MapNumberRows; y++)
+    {
+        for (int x = 0; x < MapNumberColumns; x++)
+        {
+            char TileType;
+            MapFile.get(TileType);
+            int SourceRectY = (TileType - '0') * TileSize;
+            MapFile.get(TileType);
+            int SourceRectX = (TileType - '0') * TileSize;
+            MapFile.ignore();
+            
+            Entity Tile = ECSManagerInstance->CreateEntity();
+            Tile.AddComponent<FTransformComponent>(glm::vec2(x * TileSize * TileScale, y * TileSize * TileScale), glm::vec2(TileScale, TileScale), 0.0f);
+            Tile.AddComponent<FSpriteComponent>("Jungle-Tilemap-Image", TileSize, TileSize, SourceRectX, SourceRectY);
+        }
+    }
+    MapFile.close();    
     
     //Create an entity and Add Some Components to the entity
-    Entity Tank = Manager->CreateEntity();
-    Tank.AddComponent<FTransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(1.0f, 1.0f), 0.0f);
+    Entity Tank = ECSManagerInstance->CreateEntity();
+    Tank.AddComponent<FTransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(3.0f, 3.0f), 45.0f);
     Tank.AddComponent<FRigidBodyComponent>(glm::vec2(40.0f, 0.0f));
-    Tank.AddComponent<FSpriteComponent>(10, 10);
+    Tank.AddComponent<FSpriteComponent>("Tank-Image", 32, 32);
     
-    Entity Truck = Manager->CreateEntity();
+    Entity Truck = ECSManagerInstance->CreateEntity();
     Truck.AddComponent<FTransformComponent>(glm::vec2(50.0f, 100.0f), glm::vec2(1.0f, 1.0f), 0.0f);
     Truck.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 50.0f));
-    Truck.AddComponent<FSpriteComponent>(10, 50);
+    Truck.AddComponent<FSpriteComponent>("Truck-Image", 32, 32);
+
+}
+
+void Game::Setup()
+{
+    LoadLevel(0);
 }
 
 void Game::Run()
@@ -126,10 +177,10 @@ void Game::Update()
     MilliSecondsPreviousFrame = SDL_GetTicks();
     
     // Update the manager to process the entities that are waiting to be created/deleted
-    Manager->Update();
+    ECSManagerInstance->Update();
     
     // Ask all the systems to update
-    Manager->GetSystem<MovementSystem>().Update(DeltaTime);
+    ECSManagerInstance->GetSystem<MovementSystem>().Update(DeltaTime);
 }
 
 void Game::Render()
@@ -138,7 +189,7 @@ void Game::Render()
     SDL_RenderClear(Renderer);
     
     // Ask all the systems that need to render
-    Manager->GetSystem<RenderSystem>().Update(Renderer);
+    ECSManagerInstance->GetSystem<RenderSystem>().Update(Renderer, AssetManagerInstance);
 
     SDL_RenderPresent(Renderer);
 }

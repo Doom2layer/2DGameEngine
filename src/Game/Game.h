@@ -3,6 +3,8 @@
 #include <SDL.h>
 #include <memory>
 
+#include "../AssetManager/AssetManager.h"
+
 class ECSManager;
 constexpr int FRAMES_PER_SECOND = 60;
 constexpr int MILLISECONDS_PER_FRAME = 1000 / FRAMES_PER_SECOND;
@@ -14,6 +16,7 @@ public:
     ~Game();
     void Initialize();
     void Setup();
+    void LoadLevel(int LevelNumber);
     void Run();
     void ProcessInput();
     void Update();
@@ -29,7 +32,8 @@ private:
     SDL_Window* Window;
     SDL_Renderer* Renderer;
     
-    std::unique_ptr<ECSManager> Manager;
+    std::unique_ptr<ECSManager> ECSManagerInstance;
+    std::unique_ptr<AssetManager> AssetManagerInstance;
     
     // 4-byte types
     int MilliSecondsPreviousFrame{0};
