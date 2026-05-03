@@ -254,7 +254,10 @@ template <typename TComponent, typename ... TArgs>
 void ECSManager::AddComponent(Entity InEntity, TArgs&&... InArgs)
 {
     static_assert(std::is_base_of<IComponent, TComponent>::value, "ECSManager::AddComponent TComponent must derive from IComponent.");
-    
+    // catches wrong arguments with a clear error message
+    static_assert(std::is_constructible<TComponent, TArgs...>::value, 
+        "ECSManager::AddComponent arguments do not match TComponent constructor.");
+
     const size_t ComponentID = Component<TComponent>::GetID();
     const size_t EntityID = InEntity.GetID();
     

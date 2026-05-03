@@ -40,7 +40,7 @@ private:
     
     // 1-byte types
     bool bIsRunning;
-
+    bool bIsDebug;
     
 };
 

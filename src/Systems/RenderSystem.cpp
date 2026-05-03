@@ -22,7 +22,6 @@ void RenderSystem::AddEntityToSystem(Entity InEntity)
 
 void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetManager>& AssetManagerInstance)
 {
-    
     std::vector<Entity> Entities = GetSystemEntities();
     
     // Using bIsSortDirty to only sort the entities when necessary (when a new entity is added or an entity is removed), to avoid unnecessary sorting every frame which can be expensive if we have a lot of entities.
@@ -48,7 +47,7 @@ void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetMan
     // Loop all the entities that the system is interested in
     for (const Entity& InEntity : Entities)
     {
-        FTransformComponent& Transform = InEntity.GetComponent<FTransformComponent>();
+        const FTransformComponent& Transform = InEntity.GetComponent<FTransformComponent>();
         const FSpriteComponent& Sprite = InEntity.GetComponent<FSpriteComponent>();
         
         // Set the source rectangle of our original sprite texture

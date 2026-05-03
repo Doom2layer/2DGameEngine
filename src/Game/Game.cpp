@@ -1,21 +1,28 @@
 ﻿#include "Game.h"
 #include "../Logger/Logger.h"
 #include "../ECS/ECS.h"
+#include "../Components/AnimationComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/2DBoxColliderComponent.h"
+#include "../Systems/AnimationSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
-
+#include "../Systems/CollisionSystem2D.h"
 
 #include <SDL.h>
 #include <glm/glm.hpp>
 #include <fstream>
 
+#include "../Components/2DCircleColliderComponent.h"
+#include "../Systems/RenderColliderSystem2D.h"
+
 
 Game::Game()
 {
     bIsRunning = false;
+    bIsDebug = false;
     Logger::Log("Game::Game() Called Game Object Constructor Called");
 }
 
@@ -71,13 +78,19 @@ void Game::Initialize()
 void Game::LoadLevel(int LevelNumber)
 {
     // Add the system that need to be processed in the game
+    ECSManagerInstance->AddSystem<AnimationSystem>();
     ECSManagerInstance->AddSystem<MovementSystem>();
     ECSManagerInstance->AddSystem<RenderSystem>();
+    ECSManagerInstance->AddSystem<CollisionSystem2D>();
+    ECSManagerInstance->AddSystem<RenderColliderSystem2D>();
     
     // Adding assets to the asset manager
+    AssetManagerInstance->AddTexture("Chopper-Image", "./assets/images/chopper.png");
     AssetManagerInstance->AddTexture("Tank-Image", "./assets/images/tank-panther-right.png");
     AssetManagerInstance->AddTexture("Truck-Image", "./assets/images/truck-ford-right.png");
     AssetManagerInstance->AddTexture("Jungle-Tilemap-Image", "./assets/tilemaps/jungle.png");
+    AssetManagerInstance->AddTexture("Radar-Image", "./assets/images/radar.png");
+    
     
     //Load the tile map
     constexpr int TileSize =32;
@@ -111,15 +124,29 @@ void Game::LoadLevel(int LevelNumber)
     MapFile.close();    
     
     //Create an entity and Add Some Components to the entity
+    Entity Chopper = ECSManagerInstance->CreateEntity();
+    Chopper.AddComponent<FTransformComponent>(glm::vec2(10.0f, 100.0f), glm::vec2(1.0f, 1.0f), 0.0f);
+    Chopper.AddComponent<FRigidBodyComponent>(glm::vec2(30.0f, 0.0f));
+    Chopper.AddComponent<FSpriteComponent>("Chopper-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
+    Chopper.AddComponent<FAnimationComponent>(2, 15, true);
+    
+    Entity Radar = ECSManagerInstance->CreateEntity();
+    Radar.AddComponent<FTransformComponent>(glm::vec2(WindowWidth - 74.0f, 10), glm::vec2(1.0f, 1.0f), 0.0f);
+    Radar.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
+    Radar.AddComponent<FSpriteComponent>("Radar-Image", 64, 64, 0, 0, ERenderLayer::UI, 0);
+    Radar.AddComponent<FAnimationComponent>(8, 5, true);
+    
     Entity Tank = ECSManagerInstance->CreateEntity();
-    Tank.AddComponent<FTransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(1.0f, 1.0f), 0.0f);
-    Tank.AddComponent<FRigidBodyComponent>(glm::vec2(40.0f, 0.0f));
+    Tank.AddComponent<FTransformComponent>(glm::vec2(500.0f, 10.0f), glm::vec2(1.0f, 1.0f), 0.0f);
+    Tank.AddComponent<FRigidBodyComponent>(glm::vec2(-20.0f, 0.0f));
     Tank.AddComponent<FSpriteComponent>("Tank-Image", 32, 32, 0, 0, ERenderLayer::Enemy, 0);
+    Tank.AddComponent<F2DBoxColliderComponent>(32, 32);
     
     Entity Truck = ECSManagerInstance->CreateEntity();
-    Truck.AddComponent<FTransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(1.0f, 1.0f), 0.0f);
-    Truck.AddComponent<FRigidBodyComponent>(glm::vec2(40.0f, 0.0f));
+    Truck.AddComponent<FTransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(1.0f, 1.0f), 0.0f);
+    Truck.AddComponent<FRigidBodyComponent>(glm::vec2(30.0f, 0.0f));
     Truck.AddComponent<FSpriteComponent>("Truck-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
+    Truck.AddComponent<F2DBoxColliderComponent>(32, 32);
 
 }
 
@@ -155,6 +182,10 @@ void Game::ProcessInput()
             {
                 bIsRunning = false;
             }
+            if (SDLEvent.key.keysym.sym == SDLK_d)
+            {
+                bIsDebug = !bIsDebug;
+            }
             break;
         }
     }
@@ -181,6 +212,8 @@ void Game::Update()
     
     // Ask all the systems to update
     ECSManagerInstance->GetSystem<MovementSystem>().Update(DeltaTime);
+    ECSManagerInstance->GetSystem<AnimationSystem>().Update();
+    ECSManagerInstance->GetSystem<CollisionSystem2D>().Update();
 }
 
 void Game::Render()
@@ -190,6 +223,11 @@ void Game::Render()
     
     // Ask all the systems that need to render
     ECSManagerInstance->GetSystem<RenderSystem>().Update(Renderer, AssetManagerInstance);
+    
+    if (bIsDebug)
+    {
+        ECSManagerInstance->GetSystem<RenderColliderSystem2D>().Update(Renderer);
+    }
 
     SDL_RenderPresent(Renderer);
 }
