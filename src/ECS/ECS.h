@@ -1,0 +1,404 @@
+﻿#pragma once
+#include "../Logger/Logger.h"
+#include <bitset>
+#include <cassert>
+#include <memory>
+#include <typeindex>
+#include <unordered_map>
+#include <vector>
+#include <set>
+#include <stdexcept>
+
+/*************************************************
+ *  ECS (Entity-Component-System) Architecture
+ *  ───────────────────────────────────────────────
+ *  - Signature: A bitset to track which components an entity has. Each bit represents a specific component type (e.g., bit 0 for TransformComponent, bit 1 for VelocityComponent).
+ *************************************************/
+
+constexpr unsigned int MAX_COMPONENTS = 32; // Maximum number of different component types
+
+typedef std::bitset<MAX_COMPONENTS> Signature; // Bitset to track which components an entity has
+
+/*************************************************
+ *  ECS (Entity-Component-System) Architecture
+ *  ───────────────────────────────────────────────
+ *  - IComponent: A base class for all components. It can be used to store common functionality or data for all components (e.g., a unique ID for each component type).
+ *  - Component: A template class that inherits from BaseComponent. It is used to define specific component types (e.g., TransformComponent, VelocityComponent) and assigns a unique ID to each component type using a static member variable.
+ *************************************************/
+
+struct IComponent
+{
+protected:
+    static size_t NextID;
+    
+};
+
+// Used to assign a unique id to a component type
+template<typename T>
+class Component : public IComponent
+{
+public:
+    [[nodiscard]] static size_t GetID() 
+    { 
+        static size_t ID = NextID++; 
+        return ID; 
+    }
+};
+
+/*************************************************
+ *  ECS (Entity-Component-System) Architecture
+ *  ───────────────────────────────────────────────
+ *  - Entity: A unique identifier (ID) representing a game object.
+ *************************************************/
+
+class ECSManager;
+
+class Entity
+{
+public:
+    Entity(size_t InID);
+    [[nodiscard]] size_t GetID() const;
+    
+    template <typename TComponent, typename ...TArgs> void AddComponent(TArgs&& ...InArgs);
+    template <typename TComponent> void RemoveComponent();
+    template <typename TComponent> bool HasComponent() const;
+    template <typename TComponent> TComponent& GetComponent() const;
+    
+    Entity& operator=(const Entity& OtherEntity) = default;
+    bool operator==(const Entity& OtherEntity) const { return ID == OtherEntity.ID; }
+    bool operator!=(const Entity& OtherEntity) const { return !(*this == OtherEntity); }
+    bool operator<(const Entity& OtherEntity) const { return ID < OtherEntity.ID; }
+    bool operator>(const Entity& OtherEntity) const { return ID > OtherEntity.ID; }
+    
+    ECSManager* Manager; // Pointer to the ECSManager to allow entities to add/remove components and interact with systems
+    
+private:
+    size_t ID;
+};
+
+/*************************************************
+ *  ECS (Entity-Component-System) Architecture
+ *  ───────────────────────────────────────────────
+ *  - System: Contains logic to process entities with specific components (e.g., MovementSystem processes entities with TransformComponent and VelocityComponent).
+ *************************************************/
+
+class System
+{
+public:
+    System() = default;
+    ~System() = default;
+    
+    void AddEntityToSystem(Entity InEntity);
+    void RemoveEntityFromSystem(Entity InEntity);
+    std::vector<Entity> GetSystemEntities() const;
+    const Signature& GetComponentSignature() const;
+    
+    // Defines the component type that entities must have to be considered by the system
+    template<typename TComponent> void RequireComponent();
+    
+private:
+    Signature ComponentSignature;
+    std::vector<Entity> Entities;
+    
+};
+
+/*************************************************
+ *  ECS (Entity-Component-System) Architecture
+ *  ───────────────────────────────────────────────
+ *  - IPool: An interface for component pools. It can be used to store common functionality or data for all component pools (e.g., a unique ID for each pool type).
+ *  - Pool: A template class that inherits from IPool. It is used to define specific component pools (e.g., TransformComponentPool, VelocityComponentPool) and provides methods to manage component data for entities (e.g., Add, Get, Set).
+ *************************************************/
+
+class IPool
+{
+public:
+    virtual ~IPool(){}
+};
+
+template<typename T>
+class Pool : public IPool
+{
+public:
+    Pool() = default;
+    Pool(size_t size) : Data(size){}
+    
+    virtual ~Pool() = default;
+    
+    [[nodiscard]] bool IsEmpty() const{return Data.empty();}
+    
+    [[nodiscard]] size_t GetSize() const{return Data.size();}
+    
+    void Resize(size_t size) {Data.resize(size);}
+    
+    void Clear() {Data.clear();}
+    
+    void Add(const T& Object) {Data.push_back(Object);}
+    
+    void Set(size_t Index, const T& Object)
+    {
+        assert(Index < Data.size() && "Pool::Set Index out of bounds");
+        Data[Index] = Object;
+    }
+    
+    [[nodiscard]] T& Get(size_t Index)
+    {
+        assert(Index < Data.size() && "Pool::Get Index out of bounds");
+        return Data[Index];
+    }
+
+    [[nodiscard]] const T& Get(size_t Index) const
+    {
+        assert(Index < Data.size() && "Pool::Get& Index out of bounds");
+        return Data[Index];
+    }
+
+    T& operator[](size_t Index) { return Data[Index]; }
+    const T& operator[](size_t Index) const { return Data[Index]; }
+    
+private:
+    std::vector<T> Data;
+    
+};
+
+/*************************************************
+ *  ECS (Entity-Component-System) Architecture
+ *  ───────────────────────────────────────────────
+ *  - ECSManager: Manages entities, components, and systems. Responsible for creating entities, adding/removing components, and updating systems.
+ *************************************************/
+
+class ECSManager
+{
+public:
+    ECSManager() = default;
+    
+    // The Manager Update() finally processes the entities that are waiting to be added/killed
+    void Update();
+    
+    //Entity management
+    Entity CreateEntity();
+    
+    //Component management
+    template <typename TComponent, typename ...TArgs> void AddComponent(Entity InEntity, TArgs&& ...InArgs);
+    template <typename TComponent> void RemoveComponent(Entity InEntity);
+    template <typename TComponent> bool HasComponent(Entity InEntity) const;
+    template <typename TComponent> TComponent& GetComponent(Entity InEntity) const;
+
+    //System Management
+    template <typename TSystem, typename ...TArgs> void AddSystem(TArgs&& ...InArgs);
+    template <typename TSystem> void RemoveSystem();
+    template <typename TSystem> bool HasSystem() const;
+    template <typename TSystem> TSystem& GetSystem() const;
+    
+    //Checks the component signature of an entity and add the entity to the systems that are interested in it
+    void AddEntityToSystems(Entity InEntity);
+    
+private:
+    // Keep track of how many entites were added to the scene
+    int NumberOfEntities{0};
+    
+    // vector of component pools, each pool contains all the data for a certain component type
+    // vector index = component type id
+    // pool index = entity id
+    std::vector<std::shared_ptr<IPool>> ComponentPools;
+    
+    // Vector of component signatures per entity, saying which component is turned on for a given entity
+    // vector index = entity id
+    std::vector<Signature> EntityComponentSignatures;
+    
+        
+    std::unordered_map<std::type_index, std::shared_ptr<System>> Systems;
+    
+    //Set of entities that are flagged to be added or removed in the next Manager update()
+    std::set<Entity> EntitiesToBeAdded;
+    std::set<Entity> EntitiesToBeRemoved;
+};
+
+template <typename TComponent, typename ... TArgs>
+void Entity::AddComponent(TArgs&&... InArgs)
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "Entity::AddComponent TComponent must derive from IComponent.");
+    Manager->AddComponent<TComponent>(*this, std::forward<TArgs>(InArgs)...);
+}
+
+template <typename TComponent>
+void Entity::RemoveComponent()
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "Entity::RemoveComponent TComponent must derive from IComponent.");
+    Manager->RemoveComponent<TComponent>(*this);   
+}
+
+template <typename TComponent>
+bool Entity::HasComponent() const
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "Entity::HasComponent TComponent must derive from IComponent.");
+    return Manager->HasComponent<TComponent>(*this);  
+}
+
+template <typename TComponent>
+TComponent& Entity::GetComponent() const
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "Entity::GetComponent TComponent must derive from IComponent.");
+    return Manager->GetComponent<TComponent>(*this); 
+}
+
+template <typename TComponent>
+void System::RequireComponent()
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "ECSManager::RequireComponent TComponent must derive from IComponent.");
+    
+    const auto ComponentID = Component<TComponent>::GetID();
+    ComponentSignature.set(ComponentID);
+}
+
+template <typename TComponent, typename ... TArgs>
+void ECSManager::AddComponent(Entity InEntity, TArgs&&... InArgs)
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "ECSManager::AddComponent TComponent must derive from IComponent.");
+    
+    const size_t ComponentID = Component<TComponent>::GetID();
+    const size_t EntityID = InEntity.GetID();
+    
+    // entity already has this component
+    if (HasComponent<TComponent>(InEntity))
+    {
+        Logger::Warning("ECSManager::AddComponent entity ID = " + std::to_string(EntityID) + " already has component ID = " + std::to_string(ComponentID));
+        return;
+    }
+    
+    if (ComponentID >= ComponentPools.size())
+    {
+        ComponentPools.resize(ComponentID + 1, nullptr);
+    }
+    
+    if (!ComponentPools[ComponentID])
+    {
+        ComponentPools[ComponentID] = std::make_shared<Pool<TComponent>>();
+    }
+    
+    std::shared_ptr<Pool<TComponent>> ComponentPool = std::static_pointer_cast<Pool<TComponent>>(ComponentPools[ComponentID]);
+    
+    if (EntityID >= ComponentPool->GetSize())
+    {
+        ComponentPool->Resize(EntityID + 1);
+    }
+    
+    TComponent NewComponent(std::forward<TArgs>(InArgs)...);
+
+    ComponentPool->Set(EntityID, NewComponent);
+    
+    EntityComponentSignatures[EntityID].set(ComponentID);
+    
+    Logger::Log("Component ID = " + std::to_string(ComponentID) + " added to Entity ID = " + std::to_string(EntityID));
+    
+}
+
+template <typename TComponent>
+void ECSManager::RemoveComponent(Entity InEntity)
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "ECSManager::RemoveComponent TComponent must derive from IComponent.");
+    
+    const size_t ComponentID = Component<TComponent>::GetID();
+    const size_t EntityID = InEntity.GetID();
+
+    // entity doesn't have this component
+    if (!HasComponent<TComponent>(InEntity))
+    {
+        Logger::Warning("ECSManager::RemoveComponent entity ID = " + std::to_string(EntityID) + " does not have component ID = " + std::to_string(ComponentID));
+        return;
+    }
+
+    EntityComponentSignatures[EntityID].set(ComponentID, false);
+    Logger::Log("Component ID = " + std::to_string(ComponentID) + " removed from Entity ID = " + std::to_string(EntityID));   
+}
+
+template <typename TComponent>
+bool ECSManager::HasComponent(Entity InEntity) const
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "ECSManager::HasComponent TComponent must derive from IComponent.");
+    
+    const size_t ComponentID = Component<TComponent>::GetID();
+    const size_t EntityID = InEntity.GetID();
+
+    // entity ID out of bounds
+    if (EntityID >= EntityComponentSignatures.size())
+    {
+        Logger::Warning("ECSManager::HasComponent entity ID = " + std::to_string(EntityID) + " is out of bounds.");
+        return false;
+    }
+
+    // component ID out of bounds
+    if (ComponentID >= MAX_COMPONENTS)
+    {
+        Logger::Warning("ECSManager::HasComponent component ID = " + std::to_string(ComponentID) + " exceeds MAX_COMPONENTS.");
+        return false;
+    }
+
+    return EntityComponentSignatures[EntityID].test(ComponentID);
+}
+
+template <typename TComponent>
+TComponent& ECSManager::GetComponent(Entity InEntity) const
+{
+    static_assert(std::is_base_of<IComponent, TComponent>::value, "ECSManager::GetComponent TComponent must derive from IComponent.");
+    
+    const size_t ComponentID = Component<TComponent>::GetID();
+    const size_t EntityID = InEntity.GetID();
+
+    // does the pool exist for this component type?
+    if (ComponentID >= ComponentPools.size() || !ComponentPools[ComponentID])
+    {
+        Logger::Error("ECSManager::GetComponent pool does not exist for component ID = " + std::to_string(ComponentID));
+        throw std::runtime_error("Component pool not found.");
+    }
+
+    // does this entity actually have this component?
+    if (!EntityComponentSignatures[EntityID].test(ComponentID))
+    {
+        Logger::Error("ECSManager::GetComponent entity ID = " + std::to_string(EntityID) + " does not have component ID = " + std::to_string(ComponentID));
+        throw std::runtime_error("Entity does not have component.");
+    }
+
+    Logger::Log("Component ID = " + std::to_string(ComponentID) + " retrieved from Entity ID = " + std::to_string(EntityID));
+
+    return std::static_pointer_cast<Pool<TComponent>>(ComponentPools[ComponentID])->Get(EntityID);
+}
+
+template <typename TSystem, typename ... TArgs>
+void ECSManager::AddSystem(TArgs&&... InArgs)
+{
+    static_assert(std::is_base_of<System, TSystem>::value, "ECSManager::AddSystem TSystem must derive from System.");
+    std::shared_ptr<TSystem> NewSystem =  std::make_shared<TSystem>(std::forward<TArgs>(InArgs)...);
+    Systems.insert(std::make_pair(std::type_index(typeid(TSystem)), NewSystem));
+}
+
+template <typename TSystem>
+void ECSManager::RemoveSystem()
+{
+    static_assert(std::is_base_of<System, TSystem>::value, "ECSManager::RemoveSystem TSystem must derive from System.");
+    auto It = Systems.find(std::type_index(typeid(TSystem)));
+    if (It == Systems.end())
+    {
+        Logger::Warning("ECSManager::RemoveSystem system not found.");
+        return;
+    }
+    Systems.erase(It);
+}
+
+template <typename TSystem>
+bool ECSManager::HasSystem() const
+{
+    static_assert(std::is_base_of<System, TSystem>::value, "ECSManager::HasSystem TSystem must derive from System.");
+    return Systems.find(std::type_index(typeid(TSystem))) != Systems.end();
+}
+
+template <typename TSystem>
+TSystem& ECSManager::GetSystem() const
+{
+    static_assert(std::is_base_of<System, TSystem>::value, "ECSManager::GetSystem TSystem must derive from System.");
+    auto It = Systems.find(std::type_index(typeid(TSystem)));
+    if (It == Systems.end())
+    {
+        Logger::Error("ECSManager::GetSystem system not found.");
+    }
+    return *(std::static_pointer_cast<TSystem>(It->second));
+}
