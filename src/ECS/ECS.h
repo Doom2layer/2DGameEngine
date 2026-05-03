@@ -86,9 +86,9 @@ class System
 {
 public:
     System() = default;
-    ~System() = default;
+    virtual ~System() = default;
     
-    void AddEntityToSystem(Entity InEntity);
+    virtual void AddEntityToSystem(Entity InEntity);
     void RemoveEntityFromSystem(Entity InEntity);
     std::vector<Entity> GetSystemEntities() const;
     const Signature& GetComponentSignature() const;

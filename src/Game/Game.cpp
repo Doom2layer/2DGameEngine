@@ -105,21 +105,21 @@ void Game::LoadLevel(int LevelNumber)
             
             Entity Tile = ECSManagerInstance->CreateEntity();
             Tile.AddComponent<FTransformComponent>(glm::vec2(x * TileSize * TileScale, y * TileSize * TileScale), glm::vec2(TileScale, TileScale), 0.0f);
-            Tile.AddComponent<FSpriteComponent>("Jungle-Tilemap-Image", TileSize, TileSize, SourceRectX, SourceRectY);
+            Tile.AddComponent<FSpriteComponent>("Jungle-Tilemap-Image", TileSize, TileSize, SourceRectX, SourceRectY, ERenderLayer::Background, 0);
         }
     }
     MapFile.close();    
     
     //Create an entity and Add Some Components to the entity
     Entity Tank = ECSManagerInstance->CreateEntity();
-    Tank.AddComponent<FTransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(3.0f, 3.0f), 45.0f);
+    Tank.AddComponent<FTransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(1.0f, 1.0f), 0.0f);
     Tank.AddComponent<FRigidBodyComponent>(glm::vec2(40.0f, 0.0f));
-    Tank.AddComponent<FSpriteComponent>("Tank-Image", 32, 32);
+    Tank.AddComponent<FSpriteComponent>("Tank-Image", 32, 32, 0, 0, ERenderLayer::Enemy, 0);
     
     Entity Truck = ECSManagerInstance->CreateEntity();
-    Truck.AddComponent<FTransformComponent>(glm::vec2(50.0f, 100.0f), glm::vec2(1.0f, 1.0f), 0.0f);
-    Truck.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 50.0f));
-    Truck.AddComponent<FSpriteComponent>("Truck-Image", 32, 32);
+    Truck.AddComponent<FTransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(1.0f, 1.0f), 0.0f);
+    Truck.AddComponent<FRigidBodyComponent>(glm::vec2(40.0f, 0.0f));
+    Truck.AddComponent<FSpriteComponent>("Truck-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
 
 }
 
