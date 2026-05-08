@@ -4,6 +4,8 @@
 
 #include "../Components/2DBoxColliderComponent.h"
 #include "../Components/TransformComponent.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/CollisionEvent.h"
 #include "../Logger/Logger.h"
 
 CollisionSystem2D::CollisionSystem2D()
@@ -12,7 +14,7 @@ CollisionSystem2D::CollisionSystem2D()
     RequireComponent<F2DBoxColliderComponent>();
 }
 
-void CollisionSystem2D::Update()
+void CollisionSystem2D::Update(std::unique_ptr<EventManager>& EventManagerInstance)
 {
     std::vector<Entity> Entities = GetSystemEntities();
 
@@ -85,8 +87,8 @@ void CollisionSystem2D::Update()
             if (bHasCollided)
             {
                 Logger::Log("Collision detected between Entity " + std::to_string(EntityA.GetID()) + " and Entity " + std::to_string(EntityB.GetID()));
+                EventManagerInstance->BroadcastEvent<CollisionEvent>(EntityA, EntityB);
             }
-            
         }
     }
 }

@@ -408,10 +408,16 @@
     <ClInclude Include="src\Components\SpriteComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ECS\ECS.h" />
+    <ClInclude Include="src\EventManager\Event.h" />
+    <ClInclude Include="src\EventManager\EventManager.h" />
+    <ClInclude Include="src\Events\CollisionEvent.h" />
+    <ClInclude Include="src\Events\KeyPressedEvent.h" />
     <ClInclude Include="src\Game\Game.h" />
     <ClInclude Include="src\Logger\Logger.h" />
     <ClInclude Include="src\Systems\CollisionSystem2D.h" />
     <ClInclude Include="src\Systems\AnimationSystem.h" />
+    <ClInclude Include="src\Systems\DamageSystem.h" />
+    <ClInclude Include="src\Systems\KeyboardControlSystem.h" />
     <ClInclude Include="src\Systems\MovementSystem.h" />
     <ClInclude Include="src\Systems\RenderColliderSystem2D.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
@@ -566,6 +572,10 @@
     <ClCompile Include="src\Components\SpriteComponent.cpp" />
     <ClCompile Include="src\Components\TransformComponent.cpp" />
     <ClCompile Include="src\ECS\ECS.cpp" />
+    <ClCompile Include="src\EventManager\Event.cpp" />
+    <ClCompile Include="src\EventManager\EventManager.cpp" />
+    <ClCompile Include="src\Events\CollisionEvent.cpp" />
+    <ClCompile Include="src\Events\KeyPressedEvent.cpp" />
     <ClCompile Include="src\Game\Game.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -725,6 +735,8 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Systems\CollisionSystem2D.cpp" />
     <ClCompile Include="src\Systems\AnimationSystem.cpp" />
+    <ClCompile Include="src\Systems\DamageSystem.cpp" />
+    <ClCompile Include="src\Systems\KeyboardControlSystem.cpp" />
     <ClCompile Include="src\Systems\MovementSystem.cpp" />
     <ClCompile Include="src\Systems\RenderColliderSystem2D.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />

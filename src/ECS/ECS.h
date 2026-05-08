@@ -2,6 +2,7 @@
 #include "../Logger/Logger.h"
 #include <bitset>
 #include <cassert>
+#include <deque>
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
@@ -58,6 +59,7 @@ class Entity
 public:
     Entity(size_t InID);
     [[nodiscard]] size_t GetID() const;
+    void Kill();
     
     template <typename TComponent, typename ...TArgs> void AddComponent(TArgs&& ...InArgs);
     template <typename TComponent> void RemoveComponent();
@@ -176,6 +178,7 @@ public:
     
     //Entity management
     Entity CreateEntity();
+    void KillEntity(Entity InEntity);
     
     //Component management
     template <typename TComponent, typename ...TArgs> void AddComponent(Entity InEntity, TArgs&& ...InArgs);
@@ -189,8 +192,9 @@ public:
     template <typename TSystem> bool HasSystem() const;
     template <typename TSystem> TSystem& GetSystem() const;
     
-    //Checks the component signature of an entity and add the entity to the systems that are interested in it
+    // Add and remove entities from systems
     void AddEntityToSystems(Entity InEntity);
+    void RemoveEntityFromSystems(Entity InEntity);
     
 private:
     // Keep track of how many entites were added to the scene
@@ -211,6 +215,10 @@ private:
     //Set of entities that are flagged to be added or removed in the next Manager update()
     std::set<Entity> EntitiesToBeAdded;
     std::set<Entity> EntitiesToBeRemoved;
+    
+    //List of free entity IDs that were previously removed
+    std::deque<size_t> FreeEntityIDs;
+    
 };
 
 template <typename TComponent, typename ... TArgs>

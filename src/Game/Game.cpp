@@ -6,17 +6,19 @@
 #include "../Components/TransformComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/2DBoxColliderComponent.h"
+#include "../Components/2DCircleColliderComponent.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/CollisionSystem2D.h"
+#include "../Systems/DamageSystem.h"
+#include "../Systems/RenderColliderSystem2D.h"
+#include "../Systems/KeyboardControlSystem.h"
 
 #include <SDL.h>
 #include <glm/glm.hpp>
 #include <fstream>
 
-#include "../Components/2DCircleColliderComponent.h"
-#include "../Systems/RenderColliderSystem2D.h"
 
 
 Game::Game()
@@ -62,6 +64,7 @@ void Game::Initialize()
     
     ECSManagerInstance = std::make_unique<ECSManager>();
     AssetManagerInstance = std::make_unique<AssetManager>(Renderer);
+    EventManagerInstance = std::make_unique<EventManager>();
 
     
     if (!Renderer)
@@ -83,6 +86,8 @@ void Game::LoadLevel(int LevelNumber)
     ECSManagerInstance->AddSystem<RenderSystem>();
     ECSManagerInstance->AddSystem<CollisionSystem2D>();
     ECSManagerInstance->AddSystem<RenderColliderSystem2D>();
+    ECSManagerInstance->AddSystem<DamageSystem>();
+    ECSManagerInstance->AddSystem<KeyboardControlSystem>();
     
     // Adding assets to the asset manager
     AssetManagerInstance->AddTexture("Chopper-Image", "./assets/images/chopper.png");
@@ -147,7 +152,7 @@ void Game::LoadLevel(int LevelNumber)
     Truck.AddComponent<FRigidBodyComponent>(glm::vec2(30.0f, 0.0f));
     Truck.AddComponent<FSpriteComponent>("Truck-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
     Truck.AddComponent<F2DBoxColliderComponent>(32, 32);
-
+    
 }
 
 void Game::Setup()
@@ -186,6 +191,7 @@ void Game::ProcessInput()
             {
                 bIsDebug = !bIsDebug;
             }
+            EventManagerInstance->BroadcastEvent<KeyPressedEvent>(SDLEvent.key.keysym.sym);
             break;
         }
     }
@@ -207,13 +213,20 @@ void Game::Update()
     // Store the current frame time
     MilliSecondsPreviousFrame = SDL_GetTicks();
     
+    //Reset all event
+    EventManagerInstance->ClearSubscribers();
+    
+    // Subscribe to the events of all systems
+    ECSManagerInstance->GetSystem<DamageSystem>().SubscribeToEvents(EventManagerInstance);
+    ECSManagerInstance->GetSystem<KeyboardControlSystem>().SubscribeToEvent(EventManagerInstance);
+    
     // Update the manager to process the entities that are waiting to be created/deleted
     ECSManagerInstance->Update();
     
     // Ask all the systems to update
     ECSManagerInstance->GetSystem<MovementSystem>().Update(DeltaTime);
     ECSManagerInstance->GetSystem<AnimationSystem>().Update();
-    ECSManagerInstance->GetSystem<CollisionSystem2D>().Update();
+    ECSManagerInstance->GetSystem<CollisionSystem2D>().Update(EventManagerInstance);
 }
 
 void Game::Render()
