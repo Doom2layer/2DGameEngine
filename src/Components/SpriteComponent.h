@@ -19,6 +19,7 @@ struct FSpriteComponent : public Component<FSpriteComponent>
     SDL_Rect        SourceRectangle;
     ERenderLayer    RenderLayer;
     int             ZIndex;
+    bool            bIsFixed;
 
     // Full constructor — for spritesheets and specific layer ordering
     FSpriteComponent(
@@ -28,11 +29,14 @@ struct FSpriteComponent : public Component<FSpriteComponent>
         int InSourceX                 = 0,
         int InSourceY                 = 0,
         ERenderLayer InLayer          = ERenderLayer::Background,
-        int InZIndex                  = 0)
+        int InZIndex                  = 0,
+        bool InIsFixed                = false
+        )
         : AssetID(InAssetID)
         , SourceRectangle({InSourceX, InSourceY, InWidth, InHeight})
         , RenderLayer(InLayer)
         , ZIndex(InZIndex)
+        , bIsFixed(InIsFixed)
     {}
     
 };

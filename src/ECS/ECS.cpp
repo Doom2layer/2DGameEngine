@@ -36,7 +36,6 @@ std::vector<Entity> System::GetSystemEntities() const
     return Entities;
 }
 
-
 const Signature& System::GetComponentSignature() const
 {
     return ComponentSignature;

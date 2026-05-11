@@ -11,7 +11,7 @@ RenderColliderSystem2D::RenderColliderSystem2D()
     RequireComponent<F2DBoxColliderComponent>();
 }
 
-void RenderColliderSystem2D::Update(SDL_Renderer* Renderer)
+void RenderColliderSystem2D::Update(SDL_Renderer* Renderer, SDL_Rect& Camera)
 {
     SDL_SetRenderDrawColor(Renderer, 255, 0, 0, 255); // Red color for collider
     
@@ -23,10 +23,10 @@ void RenderColliderSystem2D::Update(SDL_Renderer* Renderer)
             const F2DBoxColliderComponent& Collider = InEntity.GetComponent<F2DBoxColliderComponent>();
         
             SDL_Rect ColliderRect{
-                static_cast<int>(Transform.Position.x + Collider.Offset.x),
-                static_cast<int>(Transform.Position.y + Collider.Offset.y),
-                static_cast<int>(Collider.Width),
-                static_cast<int>(Collider.Height)
+                static_cast<int>(Transform.Position.x + Collider.Offset.x - Camera.x),
+                static_cast<int>(Transform.Position.y + Collider.Offset.y - Camera.y),
+                static_cast<int>(Collider.Width * Transform.Scale.x),
+                static_cast<int>(Collider.Height * Transform.Scale.y)
             };
         
             SDL_RenderDrawRect(Renderer, &ColliderRect);

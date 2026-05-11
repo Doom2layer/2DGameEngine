@@ -404,6 +404,11 @@
     <ClInclude Include="src\Components\2DCircleColliderComponent.h" />
     <ClInclude Include="src\Components\AnimationComponent.h" />
     <ClInclude Include="src\Components\2DBoxColliderComponent.h" />
+    <ClInclude Include="src\Components\CameraFollowComponent.h" />
+    <ClInclude Include="src\Components\HealthComponent.h" />
+    <ClInclude Include="src\Components\PlayerControllerComponent.h" />
+    <ClInclude Include="src\Components\ProjectileComponent.h" />
+    <ClInclude Include="src\Components\ProjectileEmitterComponent.h" />
     <ClInclude Include="src\Components\RigidBodyComponent.h" />
     <ClInclude Include="src\Components\SpriteComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
@@ -414,11 +419,14 @@
     <ClInclude Include="src\Events\KeyPressedEvent.h" />
     <ClInclude Include="src\Game\Game.h" />
     <ClInclude Include="src\Logger\Logger.h" />
+    <ClInclude Include="src\Systems\CameraMovementSystem.h" />
     <ClInclude Include="src\Systems\CollisionSystem2D.h" />
     <ClInclude Include="src\Systems\AnimationSystem.h" />
     <ClInclude Include="src\Systems\DamageSystem.h" />
     <ClInclude Include="src\Systems\KeyboardControlSystem.h" />
     <ClInclude Include="src\Systems\MovementSystem.h" />
+    <ClInclude Include="src\Systems\ProjectileEmitSystem.h" />
+    <ClInclude Include="src\Systems\ProjectileLifeCycleSystem.h" />
     <ClInclude Include="src\Systems\RenderColliderSystem2D.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
   </ItemGroup>
@@ -568,6 +576,11 @@
     <ClCompile Include="src\Components\2DCircleColliderComponent.cpp" />
     <ClCompile Include="src\Components\AnimationComponent.cpp" />
     <ClCompile Include="src\Components\2DBoxColliderComponent.cpp" />
+    <ClCompile Include="src\Components\CameraFollowComponent.cpp" />
+    <ClCompile Include="src\Components\HealthComponent.cpp" />
+    <ClCompile Include="src\Components\PlayerControllerComponent.cpp" />
+    <ClCompile Include="src\Components\ProjectileComponent.cpp" />
+    <ClCompile Include="src\Components\ProjectileEmitterComponent.cpp" />
     <ClCompile Include="src\Components\RigidBodyComponent.cpp" />
     <ClCompile Include="src\Components\SpriteComponent.cpp" />
     <ClCompile Include="src\Components\TransformComponent.cpp" />
@@ -733,11 +746,14 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Systems\CameraMovementSystem.cpp" />
     <ClCompile Include="src\Systems\CollisionSystem2D.cpp" />
     <ClCompile Include="src\Systems\AnimationSystem.cpp" />
     <ClCompile Include="src\Systems\DamageSystem.cpp" />
     <ClCompile Include="src\Systems\KeyboardControlSystem.cpp" />
     <ClCompile Include="src\Systems\MovementSystem.cpp" />
+    <ClCompile Include="src\Systems\ProjectileEmitSystem.cpp" />
+    <ClCompile Include="src\Systems\ProjectileLifeCycleSystem.cpp" />
     <ClCompile Include="src\Systems\RenderColliderSystem2D.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
   </ItemGroup>

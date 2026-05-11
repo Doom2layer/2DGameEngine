@@ -20,7 +20,7 @@ void RenderSystem::AddEntityToSystem(Entity InEntity)
     MakeDirty();
 }
 
-void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetManager>& AssetManagerInstance)
+void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetManager>& AssetManagerInstance, SDL_Rect& Camera)
 {
     std::vector<Entity> Entities = GetSystemEntities();
     
@@ -55,8 +55,8 @@ void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetMan
         
         // Set the destination rectangle with the x,y position to be rendered
         SDL_Rect DestinationRect = {
-            static_cast<int>(Transform.Position.x), 
-            static_cast<int>(Transform.Position.y), 
+            static_cast<int>(Transform.Position.x - (Sprite.bIsFixed ? 0 : Camera.x)), 
+            static_cast<int>(Transform.Position.y - (Sprite.bIsFixed ? 0 : Camera.y)),
             static_cast<int>(Sprite.SourceRectangle.w * Transform.Scale.x), 
             static_cast<int>(Sprite.SourceRectangle.h * Transform.Scale.y)
         };

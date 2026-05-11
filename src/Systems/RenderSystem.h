@@ -8,7 +8,7 @@ class RenderSystem : public System
 {
 public:
     RenderSystem();
-    void Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetManager>& AssetManagerInstance);
+    void Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetManager>& AssetManagerInstance, SDL_Rect& Camera);
     void MakeDirty();
     void AddEntityToSystem(Entity InEntity) override;
 

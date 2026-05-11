@@ -7,18 +7,30 @@
 #include "../Components/SpriteComponent.h"
 #include "../Components/2DBoxColliderComponent.h"
 #include "../Components/2DCircleColliderComponent.h"
+#include "../Components/PlayerControllerComponent.h"
+#include "../Components/CameraFollowComponent.h"
+#include "../Components/HealthComponent.h"
+#include "../Components/ProjectileEmitterComponent.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/MovementSystem.h"
+#include "../Systems/CameraMovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/CollisionSystem2D.h"
 #include "../Systems/DamageSystem.h"
 #include "../Systems/RenderColliderSystem2D.h"
 #include "../Systems/KeyboardControlSystem.h"
+#include "../Systems/ProjectileEmitSystem.h"
+#include "../Systems/ProjectileLifeCycleSystem.h"
 
 #include <SDL.h>
 #include <glm/glm.hpp>
 #include <fstream>
 
+
+int Game::WindowWidth;
+int Game::WindowHeight;
+int Game::MapWidth;
+int Game::MapHeight;
 
 
 Game::Game()
@@ -62,6 +74,12 @@ void Game::Initialize()
         return;
     }
     
+    // Initialize the camera view with the entire screen area
+    Camera.x = 0;
+    Camera.y = 0;
+    Camera.w = WindowWidth;
+    Camera.h = WindowHeight;
+    
     ECSManagerInstance = std::make_unique<ECSManager>();
     AssetManagerInstance = std::make_unique<AssetManager>(Renderer);
     EventManagerInstance = std::make_unique<EventManager>();
@@ -83,23 +101,27 @@ void Game::LoadLevel(int LevelNumber)
     // Add the system that need to be processed in the game
     ECSManagerInstance->AddSystem<AnimationSystem>();
     ECSManagerInstance->AddSystem<MovementSystem>();
+    ECSManagerInstance->AddSystem<CameraMovementSystem>();   
     ECSManagerInstance->AddSystem<RenderSystem>();
     ECSManagerInstance->AddSystem<CollisionSystem2D>();
     ECSManagerInstance->AddSystem<RenderColliderSystem2D>();
     ECSManagerInstance->AddSystem<DamageSystem>();
     ECSManagerInstance->AddSystem<KeyboardControlSystem>();
+    ECSManagerInstance->AddSystem<ProjectileEmitSystem>();
+    ECSManagerInstance->AddSystem<ProjectileLifeCycleSystem>();
     
     // Adding assets to the asset manager
-    AssetManagerInstance->AddTexture("Chopper-Image", "./assets/images/chopper.png");
+    AssetManagerInstance->AddTexture("Chopper-Image", "./assets/images/chopper-spritesheet.png");
     AssetManagerInstance->AddTexture("Tank-Image", "./assets/images/tank-panther-right.png");
     AssetManagerInstance->AddTexture("Truck-Image", "./assets/images/truck-ford-right.png");
     AssetManagerInstance->AddTexture("Jungle-Tilemap-Image", "./assets/tilemaps/jungle.png");
     AssetManagerInstance->AddTexture("Radar-Image", "./assets/images/radar.png");
+    AssetManagerInstance->AddTexture("Bullet-Image", "./assets/images/bullet.png");
     
     
     //Load the tile map
     constexpr int TileSize =32;
-    constexpr double TileScale = 1;
+    constexpr double TileScale = 2;
     constexpr int MapNumberColumns = 25;
     constexpr int MapNumberRows = 20;
     std::fstream MapFile;
@@ -123,35 +145,45 @@ void Game::LoadLevel(int LevelNumber)
             
             Entity Tile = ECSManagerInstance->CreateEntity();
             Tile.AddComponent<FTransformComponent>(glm::vec2(x * TileSize * TileScale, y * TileSize * TileScale), glm::vec2(TileScale, TileScale), 0.0f);
-            Tile.AddComponent<FSpriteComponent>("Jungle-Tilemap-Image", TileSize, TileSize, SourceRectX, SourceRectY, ERenderLayer::Background, 0);
+            Tile.AddComponent<FSpriteComponent>("Jungle-Tilemap-Image", TileSize, TileSize, SourceRectX, SourceRectY, ERenderLayer::Background, 0, false);
         }
     }
     MapFile.close();    
+    MapWidth = MapNumberColumns * TileSize * TileScale;
+    MapHeight = MapNumberRows * TileSize * TileScale;
     
     //Create an entity and Add Some Components to the entity
     Entity Chopper = ECSManagerInstance->CreateEntity();
     Chopper.AddComponent<FTransformComponent>(glm::vec2(10.0f, 100.0f), glm::vec2(1.0f, 1.0f), 0.0f);
-    Chopper.AddComponent<FRigidBodyComponent>(glm::vec2(30.0f, 0.0f));
+    Chopper.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     Chopper.AddComponent<FSpriteComponent>("Chopper-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
     Chopper.AddComponent<FAnimationComponent>(2, 15, true);
+    Chopper.AddComponent<FPlayerControllerComponent>(glm::vec2(0.0f, -80.0f), glm::vec2(80.0f, 0.0f), glm::vec2(0.0f, 80.0f), glm::vec2(-80.0f, 0.0f));
+    Chopper.AddComponent<FCameraFollowComponent>();
+    Chopper.AddComponent<FHealthComponent>(100);
+    
     
     Entity Radar = ECSManagerInstance->CreateEntity();
     Radar.AddComponent<FTransformComponent>(glm::vec2(WindowWidth - 74.0f, 10), glm::vec2(1.0f, 1.0f), 0.0f);
     Radar.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
-    Radar.AddComponent<FSpriteComponent>("Radar-Image", 64, 64, 0, 0, ERenderLayer::UI, 0);
+    Radar.AddComponent<FSpriteComponent>("Radar-Image", 64, 64, 0, 0, ERenderLayer::UI, 0, true);
     Radar.AddComponent<FAnimationComponent>(8, 5, true);
     
     Entity Tank = ECSManagerInstance->CreateEntity();
     Tank.AddComponent<FTransformComponent>(glm::vec2(500.0f, 10.0f), glm::vec2(1.0f, 1.0f), 0.0f);
-    Tank.AddComponent<FRigidBodyComponent>(glm::vec2(-20.0f, 0.0f));
+    Tank.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     Tank.AddComponent<FSpriteComponent>("Tank-Image", 32, 32, 0, 0, ERenderLayer::Enemy, 0);
     Tank.AddComponent<F2DBoxColliderComponent>(32, 32);
+    Tank.AddComponent<FProjectileEmitterComponent>(glm::vec2(100.0, 0.0), 5000, 3000, 0, false);
+    Tank.AddComponent<FHealthComponent>(100);
     
     Entity Truck = ECSManagerInstance->CreateEntity();
     Truck.AddComponent<FTransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(1.0f, 1.0f), 0.0f);
-    Truck.AddComponent<FRigidBodyComponent>(glm::vec2(30.0f, 0.0f));
+    Truck.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     Truck.AddComponent<FSpriteComponent>("Truck-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
     Truck.AddComponent<F2DBoxColliderComponent>(32, 32);
+    Truck.AddComponent<FProjectileEmitterComponent>(glm::vec2(0.0, 100.0), 2000, 5000, 0, false);
+    Truck.AddComponent<FHealthComponent>(100);
     
 }
 
@@ -225,8 +257,11 @@ void Game::Update()
     
     // Ask all the systems to update
     ECSManagerInstance->GetSystem<MovementSystem>().Update(DeltaTime);
+    ECSManagerInstance->GetSystem<CameraMovementSystem>().Update(Camera);   
     ECSManagerInstance->GetSystem<AnimationSystem>().Update();
     ECSManagerInstance->GetSystem<CollisionSystem2D>().Update(EventManagerInstance);
+    ECSManagerInstance->GetSystem<ProjectileEmitSystem>().Update(ECSManagerInstance);
+    ECSManagerInstance->GetSystem<ProjectileLifeCycleSystem>().Update();
 }
 
 void Game::Render()
@@ -235,11 +270,11 @@ void Game::Render()
     SDL_RenderClear(Renderer);
     
     // Ask all the systems that need to render
-    ECSManagerInstance->GetSystem<RenderSystem>().Update(Renderer, AssetManagerInstance);
+    ECSManagerInstance->GetSystem<RenderSystem>().Update(Renderer, AssetManagerInstance, Camera);
     
     if (bIsDebug)
     {
-        ECSManagerInstance->GetSystem<RenderColliderSystem2D>().Update(Renderer);
+        ECSManagerInstance->GetSystem<RenderColliderSystem2D>().Update(Renderer, Camera);
     }
 
     SDL_RenderPresent(Renderer);

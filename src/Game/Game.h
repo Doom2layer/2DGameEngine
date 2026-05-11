@@ -26,13 +26,16 @@ public:
     void Destroy();
     
     // 4-byte types
-    int WindowWidth;
-    int WindowHeight;
+    static int WindowWidth;
+    static int WindowHeight;
+    static int MapWidth;
+    static int MapHeight;
     
 private:
     // 8-byte types
     SDL_Window* Window;
     SDL_Renderer* Renderer;
+    SDL_Rect Camera;
     
     std::unique_ptr<ECSManager> ECSManagerInstance;
     std::unique_ptr<AssetManager> AssetManagerInstance;
