@@ -208,27 +208,36 @@ void ECSManager::RemoveEntityGroup(Entity InEntity)
 void ECSManager::Update()
 {
     // Process the entities that are waiting to be created to the active systems
-    for (Entity Entity : EntitiesToBeAdded)
+    for (const Entity& InEntity : EntitiesToBeAdded)
     {
-        AddEntityToSystems(Entity);
+        AddEntityToSystems(InEntity);
     }
     EntitiesToBeAdded.clear();
+
     
     // Process the entities that are waiting to be killed from the active systems
-    
-    for (Entity Entity : EntitiesToBeRemoved)
+
+    for (const Entity& InEntity : EntitiesToBeRemoved)
     {
-        RemoveEntityFromSystems(Entity);
+        RemoveEntityFromSystems(InEntity);
+
+        EntityComponentSignatures[InEntity.GetID()].reset();
         
-        EntityComponentSignatures[Entity.GetID()].reset();
+        // Remove the entity from the component pools
+        for (const auto& Pool : ComponentPools)
+        {
+            if (Pool)
+            {
+                Pool->RemoveEntityFromPool(InEntity.GetID());
+            }
+        }
         
         // Make EntityID available to be reused
-        FreeEntityIDs.push_back(Entity.GetID());
+        FreeEntityIDs.push_back(InEntity.GetID());
         
-        //Remove any traces of that entity from the tag or group maps
-        RemoveEntityTag(Entity);
-        RemoveEntityGroup(Entity);       
-        
+        //Remove any traces of that entity from the tag or group maps        
+        RemoveEntityTag(InEntity);
+        RemoveEntityGroup(InEntity);
     }
     EntitiesToBeRemoved.clear();
 }

@@ -3,6 +3,7 @@
 #include <bitset>
 #include <cassert>
 #include <deque>
+#include <iostream>
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
@@ -121,50 +122,92 @@ class IPool
 {
 public:
     virtual ~IPool(){}
+    virtual void RemoveEntityFromPool(size_t EntityID) = 0;
 };
 
 template<typename T>
 class Pool : public IPool
 {
 public:
-    Pool() = default;
-    Pool(size_t size) : Data(size){}
-    
+    explicit Pool(size_t Capacity = 100) : Data(Capacity), Size(0) {}
     virtual ~Pool() = default;
+    virtual void RemoveEntityFromPool(size_t EntityID) override
+    {
+        Remove(EntityID);
+    }
     
-    [[nodiscard]] bool IsEmpty() const{return Data.empty();}
-    
-    [[nodiscard]] size_t GetSize() const{return Data.size();}
-    
-    void Resize(size_t size) {Data.resize(size);}
-    
-    void Clear() {Data.clear();}
+    [[nodiscard]] bool   IsEmpty() const { return Size == 0; }
+    [[nodiscard]] size_t GetSize() const { return Size; }
     
     void Add(const T& Object) {Data.push_back(Object);}
+    void Resize(size_t N)     { Data.resize(N); }
+    void Clear()              { Data.clear(); EntityToIndex.clear(); IndexToEntity.clear(); Size = 0; }
     
-    void Set(size_t Index, const T& Object)
+    void Set(size_t EntityID, const T& Object)
     {
-        assert(Index < Data.size() && "Pool::Set Index out of bounds");
+        const auto IT = EntityToIndex.find(EntityID);
+        if (IT != EntityToIndex.end())
+        {
+            Data[IT->second] = Object;
+            return;
+        }
+
+        size_t Index = Size;
+        EntityToIndex.emplace(EntityID, Index);
+        IndexToEntity.emplace(Index, EntityID);
+
+        if (Index >= Data.size())
+        {
+            Data.resize(Size * 2 + 1);
+        }
+
         Data[Index] = Object;
+        Size++;
     }
     
-    [[nodiscard]] T& Get(size_t Index)
+    void Remove(size_t EntityID)
     {
-        assert(Index < Data.size() && "Pool::Get Index out of bounds");
-        return Data[Index];
+        const auto IT = EntityToIndex.find(EntityID);
+        if (IT == EntityToIndex.end()) return;
+
+        size_t IndexOfRemoved = IT->second;
+        size_t IndexOfLast    = Size - 1;
+
+        if (IndexOfRemoved != IndexOfLast)
+        {
+            size_t LastEntityID        = IndexToEntity[IndexOfLast];
+            Data[IndexOfRemoved]       = Data[IndexOfLast];
+            EntityToIndex[LastEntityID] = IndexOfRemoved;
+            IndexToEntity[IndexOfRemoved] = LastEntityID;
+        }
+
+        EntityToIndex.erase(IT);
+        IndexToEntity.erase(IndexOfLast);
+        Size--;
+    }
+    
+    [[nodiscard]] T& Get(size_t EntityID)
+    {
+        assert(EntityToIndex.find(EntityID) != EntityToIndex.end() && "Entity not found in pool");
+        return Data[EntityToIndex[EntityID]];
     }
 
-    [[nodiscard]] const T& Get(size_t Index) const
+    [[nodiscard]] const T& Get(size_t EntityID) const
     {
-        assert(Index < Data.size() && "Pool::Get& Index out of bounds");
-        return Data[Index];
+        assert(EntityToIndex.find(EntityID) != EntityToIndex.end() && "Entity not found in pool");
+        return Data[EntityToIndex.at(EntityID)];
     }
 
-    T& operator[](size_t Index) { return Data[Index]; }
+    T&       operator[](size_t Index)       { return Data[Index]; }
     const T& operator[](size_t Index) const { return Data[Index]; }
     
 private:
-    std::vector<T> Data;
+    // We keep track of vector of objects and current number of elements
+    std::vector<T>                     Data;
+    size_t                             Size;
+    // Helper maps to keep track of entity ids per index, so the vector is always packed
+    std::unordered_map<size_t, size_t> EntityToIndex;
+    std::unordered_map<size_t, size_t> IndexToEntity;
     
 };
 
@@ -315,11 +358,6 @@ void ECSManager::AddComponent(Entity InEntity, TArgs&&... InArgs)
     
     std::shared_ptr<Pool<TComponent>> ComponentPool = std::static_pointer_cast<Pool<TComponent>>(ComponentPools[ComponentID]);
     
-    if (EntityID >= ComponentPool->GetSize())
-    {
-        ComponentPool->Resize(EntityID + 1);
-    }
-    
     TComponent NewComponent(std::forward<TArgs>(InArgs)...);
 
     ComponentPool->Set(EntityID, NewComponent);
@@ -327,6 +365,8 @@ void ECSManager::AddComponent(Entity InEntity, TArgs&&... InArgs)
     EntityComponentSignatures[EntityID].set(ComponentID);
     
     Logger::Log("Component ID = " + std::to_string(ComponentID) + " added to Entity ID = " + std::to_string(EntityID));
+    
+    std::cout << "Component ID = " << ComponentID << " Pool size : " << ComponentPool->GetSize() << std::endl;
     
 }
 
@@ -345,6 +385,11 @@ void ECSManager::RemoveComponent(Entity InEntity)
         return;
     }
 
+    // Remove the component from the component list for that entity
+    std::shared_ptr<Pool<TComponent>> ComponentPool = std::static_pointer_cast<Pool<TComponent>>(ComponentPools[ComponentID]);
+    ComponentPool->Remove(EntityID);
+    
+    // Set this component signature for that entity to false
     EntityComponentSignatures[EntityID].set(ComponentID, false);
     Logger::Log("Component ID = " + std::to_string(ComponentID) + " removed from Entity ID = " + std::to_string(EntityID));   
 }
