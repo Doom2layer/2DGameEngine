@@ -55,6 +55,7 @@ void ProjectileEmitSystem::OnKeyPressed(KeyPressedEvent& Event)
                 
                 // Create new projectile entity and add it to the world
                 Entity Projectile = InEntity.Manager->CreateEntity();
+                Projectile.Group("Projectiles");
                 Projectile.AddComponent<FTransformComponent>(ProjectilePosition, glm::vec2(1.0f, 1.0f), 0.0f);
                 Projectile.AddComponent<FRigidBodyComponent>(ProjectileVelocity);
                 Projectile.AddComponent<FSpriteComponent>("Bullet-Image", 4, 4, 0, 0, ERenderLayer::Player, 5);
@@ -87,6 +88,7 @@ void ProjectileEmitSystem::Update(std::unique_ptr<ECSManager>& ECSManagerInstanc
             
             //Add new projectile entity to the registry
             Entity Projectile = ECSManagerInstance->CreateEntity();
+            Projectile.Group("Projectiles");
             Projectile.AddComponent<FTransformComponent>(ProjectilePosition, glm::vec2(1.0f, 1.0f), 0.0f);
             Projectile.AddComponent<FRigidBodyComponent>(ProjectileEmitterComponent.Velocity);
             Projectile.AddComponent<FSpriteComponent>("Bullet-Image", 4, 4, 0, 0, ERenderLayer::Enemy, 5);

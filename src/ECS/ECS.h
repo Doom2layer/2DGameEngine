@@ -61,6 +61,12 @@ public:
     [[nodiscard]] size_t GetID() const;
     void Kill();
     
+    //Manage Entity Tags and Groups
+    void Tag(const std::string& Tag);
+    bool HasTag(const std::string& Tag) const;
+    void Group(const std::string& Group);
+    bool BelongsToGroup(const std::string& Group) const;
+    
     template <typename TComponent, typename ...TArgs> void AddComponent(TArgs&& ...InArgs);
     template <typename TComponent> void RemoveComponent();
     template <typename TComponent> bool HasComponent() const;
@@ -196,6 +202,19 @@ public:
     void AddEntityToSystems(Entity InEntity);
     void RemoveEntityFromSystems(Entity InEntity);
     
+    // Tag Management
+    void TagEntity(Entity InEntity, const std::string& Tag);
+    bool EntityHasTag(Entity InEntity, const std::string& Tag) const;
+    Entity GetEntityByTag(const std::string& Tag) const;
+    void RemoveEntityTag(Entity InEntity);
+    
+    //Group Management
+    void GroupEntity(Entity InEntity, const std::string& Group);
+    bool EntityBelongsToGroup(Entity InEntity, const std::string& Group);
+    std::vector<Entity> GetEntitiesByGroup(const std::string& Group) const;
+    void RemoveEntityGroup(Entity InEntity);
+    
+    
 private:
     // Keep track of how many entites were added to the scene
     int NumberOfEntities{0};
@@ -215,6 +234,14 @@ private:
     //Set of entities that are flagged to be added or removed in the next Manager update()
     std::set<Entity> EntitiesToBeAdded;
     std::set<Entity> EntitiesToBeRemoved;
+    
+    //Entity Tags (one tag name per entity)
+    std::unordered_map<std::string, Entity> EntityPerTag;
+    std::unordered_map<int, std::string> TagPerEntity;
+    
+    //Entity Groups (a set of entities per group name)
+    std::unordered_map<std::string, std::set<Entity>> EntitiesPerGroup;
+    std::unordered_map<int, std::string> GroupPerEntity;
     
     //List of free entity IDs that were previously removed
     std::deque<size_t> FreeEntityIDs;

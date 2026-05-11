@@ -144,6 +144,7 @@ void Game::LoadLevel(int LevelNumber)
             MapFile.ignore();
             
             Entity Tile = ECSManagerInstance->CreateEntity();
+            Tile.Group("Tiles");
             Tile.AddComponent<FTransformComponent>(glm::vec2(x * TileSize * TileScale, y * TileSize * TileScale), glm::vec2(TileScale, TileScale), 0.0f);
             Tile.AddComponent<FSpriteComponent>("Jungle-Tilemap-Image", TileSize, TileSize, SourceRectX, SourceRectY, ERenderLayer::Background, 0, false);
         }
@@ -154,14 +155,16 @@ void Game::LoadLevel(int LevelNumber)
     
     //Create an entity and Add Some Components to the entity
     Entity Chopper = ECSManagerInstance->CreateEntity();
+    Chopper.Tag("Player");
     Chopper.AddComponent<FTransformComponent>(glm::vec2(10.0f, 100.0f), glm::vec2(1.0f, 1.0f), 0.0f);
     Chopper.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     Chopper.AddComponent<FSpriteComponent>("Chopper-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
+    Chopper.AddComponent<F2DBoxColliderComponent>(32, 32);
     Chopper.AddComponent<FAnimationComponent>(2, 15, true);
     Chopper.AddComponent<FPlayerControllerComponent>(glm::vec2(0.0f, -80.0f), glm::vec2(80.0f, 0.0f), glm::vec2(0.0f, 80.0f), glm::vec2(-80.0f, 0.0f));
     Chopper.AddComponent<FCameraFollowComponent>();
     Chopper.AddComponent<FHealthComponent>(100);
-    Chopper.AddComponent<FProjectileEmitterComponent>(glm::vec2(150.0, 150.0), 0, 10000, 0, true);
+    Chopper.AddComponent<FProjectileEmitterComponent>(glm::vec2(150.0, 150.0), 0, 10000, 10, true);
     
     
     Entity Radar = ECSManagerInstance->CreateEntity();
@@ -171,19 +174,21 @@ void Game::LoadLevel(int LevelNumber)
     Radar.AddComponent<FAnimationComponent>(8, 5, true);
     
     Entity Tank = ECSManagerInstance->CreateEntity();
+    Tank.Group("Enemies");
     Tank.AddComponent<FTransformComponent>(glm::vec2(500.0f, 10.0f), glm::vec2(1.0f, 1.0f), 0.0f);
     Tank.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     Tank.AddComponent<FSpriteComponent>("Tank-Image", 32, 32, 0, 0, ERenderLayer::Enemy, 0);
     Tank.AddComponent<F2DBoxColliderComponent>(32, 32);
-    Tank.AddComponent<FProjectileEmitterComponent>(glm::vec2(100.0, 0.0), 5000, 3000, 0, false);
+    Tank.AddComponent<FProjectileEmitterComponent>(glm::vec2(100.0, 0.0), 5000, 3000, 10, false);
     Tank.AddComponent<FHealthComponent>(100);
     
     Entity Truck = ECSManagerInstance->CreateEntity();
+    Truck.Group("Enemies");
     Truck.AddComponent<FTransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(1.0f, 1.0f), 0.0f);
     Truck.AddComponent<FRigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     Truck.AddComponent<FSpriteComponent>("Truck-Image", 32, 32, 0, 0, ERenderLayer::Player, 0);
     Truck.AddComponent<F2DBoxColliderComponent>(32, 32);
-    Truck.AddComponent<FProjectileEmitterComponent>(glm::vec2(0.0, 100.0), 2000, 5000, 0, false);
+    Truck.AddComponent<FProjectileEmitterComponent>(glm::vec2(0.0, 100.0), 2000, 5000, 10, false);
     Truck.AddComponent<FHealthComponent>(100);
     
 }
