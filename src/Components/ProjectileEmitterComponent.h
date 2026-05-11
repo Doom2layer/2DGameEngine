@@ -9,6 +9,7 @@ struct FProjectileEmitterComponent : public Component<FProjectileEmitterComponen
     Uint32    FireRate;          
     Uint32    Duration;          
     int       HitPercentDamage;
+    
     Uint32    LastEmissionTime;
     bool      bIsFriendly;
 

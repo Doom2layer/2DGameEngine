@@ -161,6 +161,7 @@ void Game::LoadLevel(int LevelNumber)
     Chopper.AddComponent<FPlayerControllerComponent>(glm::vec2(0.0f, -80.0f), glm::vec2(80.0f, 0.0f), glm::vec2(0.0f, 80.0f), glm::vec2(-80.0f, 0.0f));
     Chopper.AddComponent<FCameraFollowComponent>();
     Chopper.AddComponent<FHealthComponent>(100);
+    Chopper.AddComponent<FProjectileEmitterComponent>(glm::vec2(150.0, 150.0), 0, 10000, 0, true);
     
     
     Entity Radar = ECSManagerInstance->CreateEntity();
@@ -251,6 +252,7 @@ void Game::Update()
     // Subscribe to the events of all systems
     ECSManagerInstance->GetSystem<DamageSystem>().SubscribeToEvents(EventManagerInstance);
     ECSManagerInstance->GetSystem<KeyboardControlSystem>().SubscribeToEvent(EventManagerInstance);
+    ECSManagerInstance->GetSystem<ProjectileEmitSystem>().SubscribeToEvents(EventManagerInstance);
     
     // Update the manager to process the entities that are waiting to be created/deleted
     ECSManagerInstance->Update();
