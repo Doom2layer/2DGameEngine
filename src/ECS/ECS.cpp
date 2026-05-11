@@ -133,65 +133,76 @@ void ECSManager::TagEntity(Entity InEntity, const std::string& Tag)
 
 bool ECSManager::EntityHasTag(Entity InEntity, const std::string& Tag) const
 {
-    if (TagPerEntity.find(InEntity.GetID()) == TagPerEntity.end())
+    const auto IT = TagPerEntity.find(InEntity.GetID());
+    if (IT == TagPerEntity.end())
     {
         return false;
     }
-    return EntityPerTag.find(Tag)->second == InEntity;
+    return IT->second == Tag;
 }
 
 Entity ECSManager::GetEntityByTag(const std::string& Tag) const
 {
-    return EntityPerTag.at(Tag);
+    const auto IT = EntityPerTag.find(Tag);
+    if (IT == EntityPerTag.end())
+    {
+        Logger::Warning("ECSManager::GetEntityByTag tag not found: " + Tag);
+        return Entity(-1); // Return an invalid entity if tag not found
+    }
+    return IT->second;
 }
 
 void ECSManager::RemoveEntityTag(Entity InEntity)
 {
-    std::unordered_map<int, std::string>::iterator TaggedEntity = TagPerEntity.find(InEntity.GetID());
-    if (TaggedEntity != TagPerEntity.end())
+    const auto IT = TagPerEntity.find(InEntity.GetID());
+    if (IT != TagPerEntity.end())
     {
-        std::string Tag = TaggedEntity->second;
-        EntityPerTag.erase(Tag);
-        TagPerEntity.erase(TaggedEntity);
+        EntityPerTag.erase(IT->second);
+        TagPerEntity.erase(IT);
     }
 }
 
 void ECSManager::GroupEntity(Entity InEntity, const std::string& Group)
 {
-    EntitiesPerGroup.emplace(Group, std::set<Entity>{});
-    EntitiesPerGroup[Group].emplace(InEntity);
+    EntitiesPerGroup.try_emplace(Group).first->second.emplace(InEntity);
     GroupPerEntity.emplace(InEntity.GetID(), Group);
 }
 
-bool ECSManager::EntityBelongsToGroup(Entity InEntity, const std::string& Group)
+bool ECSManager::EntityBelongsToGroup(Entity InEntity, const std::string& Group) const
 {
-    std::set<Entity> GroupEntities = EntitiesPerGroup.at(Group);
-    return GroupEntities.find(InEntity.GetID()) != GroupEntities.end();   
+    const auto IT = EntitiesPerGroup.find(Group);
+    if (IT == EntitiesPerGroup.end())
+    {
+        return false;
+    }
+    return IT->second.find(InEntity) != IT->second.end();
 }
 
 std::vector<Entity> ECSManager::GetEntitiesByGroup(const std::string& Group) const
 {
-    const std::set<Entity>& SetOfEntities = EntitiesPerGroup.at(Group);
-    return std::vector<Entity>(SetOfEntities.begin(), SetOfEntities.end());  
+    const auto IT = EntitiesPerGroup.find(Group);
+    if (IT == EntitiesPerGroup.end())
+    {
+        return {};
+    }
+    return std::vector<Entity>(IT->second.begin(), IT->second.end());
 }
 
 void ECSManager::RemoveEntityGroup(Entity InEntity)
 {
-    std::unordered_map<int, std::string>::iterator GroupedEntities = GroupPerEntity.find(InEntity.GetID());
-    if (GroupedEntities != GroupPerEntity.end())
+    const auto GroupIT = GroupPerEntity.find(InEntity.GetID());
+    if (GroupIT == GroupPerEntity.end())
     {
-        std::unordered_map<std::string, std::set<Entity>>::iterator Group = EntitiesPerGroup.find(GroupedEntities->second);
-        
-        if (Group != EntitiesPerGroup.end())
-        {
-            std::set<Entity>::iterator EntitiesInGroup = Group->second.find(InEntity);
-            if (EntitiesInGroup != Group->second.end())
-            {
-                Group->second.erase(EntitiesInGroup);
-            }
-        }
-        GroupPerEntity.erase(GroupedEntities);
+        return;
     }
+
+    const auto EntitiesIT = EntitiesPerGroup.find(GroupIT->second);
+    if (EntitiesIT != EntitiesPerGroup.end())
+    {
+        EntitiesIT->second.erase(InEntity);
+    }
+
+    GroupPerEntity.erase(GroupIT);
 }
 
 void ECSManager::Update()

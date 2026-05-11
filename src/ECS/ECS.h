@@ -210,7 +210,7 @@ public:
     
     //Group Management
     void GroupEntity(Entity InEntity, const std::string& Group);
-    bool EntityBelongsToGroup(Entity InEntity, const std::string& Group);
+    bool EntityBelongsToGroup(Entity InEntity, const std::string& Group) const;
     std::vector<Entity> GetEntitiesByGroup(const std::string& Group) const;
     void RemoveEntityGroup(Entity InEntity);
     
