@@ -12,7 +12,6 @@
 #include "../Components/HealthComponent.h"
 #include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/TextLabelComponent.h"
-
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/CameraMovementSystem.h"
@@ -24,12 +23,14 @@
 #include "../Systems/ProjectileEmitSystem.h"
 #include "../Systems/ProjectileLifeCycleSystem.h"
 #include "../Systems/RenderTextSystem.h"
+#include "../Systems/RenderHealthBarSystem.h"
 
 #include <SDL.h>
 #include <glm/glm.hpp>
 #include <fstream>
-
-#include "../Systems/RenderHealthBarSystem.h"
+#include <imgui/imgui.h>
+#include <imgui/imgui_sdl.h>
+#include <imgui/imgui_impl_sdl2.h>
 
 
 int Game::WindowWidth;
@@ -84,6 +85,10 @@ void Game::Initialize()
         Logger::Error("Game::Initialize failed to create renderer.");
         return;
     }
+    
+    // Initialize ImGUI Context
+    ImGui::CreateContext();
+    ImGuiSDL::Initialize(Renderer, WindowWidth, WindowHeight);
     
     // Initialize the camera view with the entire screen area
     Camera.x = 0;
@@ -232,6 +237,18 @@ void Game::ProcessInput()
     SDL_Event SDLEvent;
     while (SDL_PollEvent(&SDLEvent))
     {
+        //ImGui SDL Input
+        ImGui_ImplSDL2_ProcessEvent(&SDLEvent);
+        ImGuiIO& IO = ImGui::GetIO();
+        
+        int MouseX, MouseY;
+        const int Buttons = SDL_GetMouseState(&MouseX, &MouseY);
+        
+        IO.MousePos = ImVec2(static_cast<float>(MouseX), static_cast<float>(MouseY));
+        IO.MouseDown[0] = Buttons& SDL_BUTTON(SDL_BUTTON_LEFT);
+        IO.MouseDown[1] = Buttons& SDL_BUTTON(SDL_BUTTON_RIGHT);
+        
+        // Handle Core SDL Event (close window, key pressed, etc.)
         switch (SDLEvent.type)
         {
             case SDL_QUIT:
@@ -302,6 +319,10 @@ void Game::Render()
     if (bIsDebug)
     {
         ECSManagerInstance->GetSystem<RenderColliderSystem2D>().Update(Renderer, Camera);
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+        ImGui::Render();
+        ImGuiSDL::Render(ImGui::GetDrawData());
     }
 
     SDL_RenderPresent(Renderer);
@@ -309,6 +330,8 @@ void Game::Render()
 
 void Game::Destroy()
 {
+    ImGuiSDL::Deinitialize();
+    ImGui::DestroyContext();
     SDL_DestroyRenderer(Renderer);
     SDL_DestroyWindow(Window);
     SDL_Quit();

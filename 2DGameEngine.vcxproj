@@ -389,6 +389,7 @@
     <ClInclude Include="libs\glm\vector_relational.hpp" />
     <ClInclude Include="libs\imgui\imconfig.h" />
     <ClInclude Include="libs\imgui\imgui.h" />
+    <ClInclude Include="libs\imgui\imgui_impl_sdl.h" />
     <ClInclude Include="libs\imgui\imgui_internal.h" />
     <ClInclude Include="libs\imgui\imgui_sdl.h" />
     <ClInclude Include="libs\imgui\imstb_rectpack.h" />
@@ -573,6 +574,7 @@
     <ClCompile Include="libs\imgui\imgui.cpp" />
     <ClCompile Include="libs\imgui\imgui_demo.cpp" />
     <ClCompile Include="libs\imgui\imgui_draw.cpp" />
+    <ClCompile Include="libs\imgui\imgui_impl_sdl.cpp" />
     <ClCompile Include="libs\imgui\imgui_sdl.cpp" />
     <ClCompile Include="libs\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\AssetManager\AssetManager.cpp" />
