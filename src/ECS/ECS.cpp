@@ -224,7 +224,7 @@ void ECSManager::Update()
         EntityComponentSignatures[InEntity.GetID()].reset();
         
         // Remove the entity from the component pools
-        for (const auto& Pool : ComponentPools)
+        for (const std::shared_ptr<IPool>& Pool : ComponentPools)
         {
             if (Pool)
             {

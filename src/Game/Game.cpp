@@ -11,6 +11,8 @@
 #include "../Components/CameraFollowComponent.h"
 #include "../Components/HealthComponent.h"
 #include "../Components/ProjectileEmitterComponent.h"
+#include "../Components/TextLabelComponent.h"
+
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/CameraMovementSystem.h"
@@ -21,10 +23,13 @@
 #include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/ProjectileEmitSystem.h"
 #include "../Systems/ProjectileLifeCycleSystem.h"
+#include "../Systems/RenderTextSystem.h"
 
 #include <SDL.h>
 #include <glm/glm.hpp>
 #include <fstream>
+
+#include "../Systems/RenderHealthBarSystem.h"
 
 
 int Game::WindowWidth;
@@ -50,6 +55,12 @@ void Game::Initialize()
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         Logger::Error("SDL_Init failed: " + std::string(SDL_GetError()));
+        return;
+    }
+    
+    if (TTF_Init() != 0)
+    {
+        Logger::Error("TTF_Init failed: " + std::string(TTF_GetError()));
         return;
     }
     
@@ -109,6 +120,8 @@ void Game::LoadLevel(int LevelNumber)
     ECSManagerInstance->AddSystem<KeyboardControlSystem>();
     ECSManagerInstance->AddSystem<ProjectileEmitSystem>();
     ECSManagerInstance->AddSystem<ProjectileLifeCycleSystem>();
+    ECSManagerInstance->AddSystem<RenderTextSystem>();
+    ECSManagerInstance->AddSystem<RenderHealthBarSystem>();
     
     // Adding assets to the asset manager
     AssetManagerInstance->AddTexture("Chopper-Image", "./assets/images/chopper-spritesheet.png");
@@ -117,6 +130,8 @@ void Game::LoadLevel(int LevelNumber)
     AssetManagerInstance->AddTexture("Jungle-Tilemap-Image", "./assets/tilemaps/jungle.png");
     AssetManagerInstance->AddTexture("Radar-Image", "./assets/images/radar.png");
     AssetManagerInstance->AddTexture("Bullet-Image", "./assets/images/bullet.png");
+    AssetManagerInstance->AddFont("Charriot-Font", "./assets/fonts/charriot.ttf", 24);
+    AssetManagerInstance->AddFont("Arial-Font", "./assets/fonts/arial.ttf", 24);
     
     
     //Load the tile map
@@ -190,6 +205,9 @@ void Game::LoadLevel(int LevelNumber)
     Truck.AddComponent<F2DBoxColliderComponent>(32, 32);
     Truck.AddComponent<FProjectileEmitterComponent>(glm::vec2(0.0, 100.0), 2000, 5000, 10, false);
     Truck.AddComponent<FHealthComponent>(100);
+    
+    Entity Label = ECSManagerInstance->CreateEntity();
+    Label.AddComponent<FTextLabelComponent>(glm::vec2(WindowWidth / 2 - 40, 10.0f), "Hello World!", "Charriot-Font", SDL_Color{255, 255, 255}, true);
     
 }
 
@@ -278,6 +296,8 @@ void Game::Render()
     
     // Ask all the systems that need to render
     ECSManagerInstance->GetSystem<RenderSystem>().Update(Renderer, AssetManagerInstance, Camera);
+    ECSManagerInstance->GetSystem<RenderTextSystem>().Update(Renderer, Camera, AssetManagerInstance);
+    ECSManagerInstance->GetSystem<RenderHealthBarSystem>().Update(Renderer, Camera, AssetManagerInstance);
     
     if (bIsDebug)
     {

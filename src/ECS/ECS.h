@@ -366,8 +366,6 @@ void ECSManager::AddComponent(Entity InEntity, TArgs&&... InArgs)
     
     Logger::Log("Component ID = " + std::to_string(ComponentID) + " added to Entity ID = " + std::to_string(EntityID));
     
-    std::cout << "Component ID = " << ComponentID << " Pool size : " << ComponentPool->GetSize() << std::endl;
-    
 }
 
 template <typename TComponent>
