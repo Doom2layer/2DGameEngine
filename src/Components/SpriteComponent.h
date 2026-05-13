@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <SDL_rect.h>
+#include <SDL_render.h>
 
 #include "../ECS/ECS.h"
 
@@ -15,11 +16,12 @@ enum class ERenderLayer : uint8_t
 
 struct FSpriteComponent : public Component<FSpriteComponent>
 {
-    std::string     AssetID;
-    SDL_Rect        SourceRectangle;
-    ERenderLayer    RenderLayer;
-    int             ZIndex;
-    bool            bIsFixed;
+    std::string         AssetID;
+    SDL_Rect            SourceRectangle;
+    SDL_RendererFlip    Flip;
+    ERenderLayer        RenderLayer;
+    int                 ZIndex;
+    bool                bIsFixed;
 
     // Full constructor — for spritesheets and specific layer ordering
     FSpriteComponent(
@@ -30,13 +32,15 @@ struct FSpriteComponent : public Component<FSpriteComponent>
         int InSourceY                 = 0,
         ERenderLayer InLayer          = ERenderLayer::Background,
         int InZIndex                  = 0,
-        bool InIsFixed                = false
+        bool InIsFixed                = false,
+        SDL_RendererFlip InFlip       = SDL_FLIP_NONE
         )
         : AssetID(InAssetID)
         , SourceRectangle({InSourceX, InSourceY, InWidth, InHeight})
         , RenderLayer(InLayer)
         , ZIndex(InZIndex)
         , bIsFixed(InIsFixed)
+        , Flip(InFlip)
     {}
     
 };

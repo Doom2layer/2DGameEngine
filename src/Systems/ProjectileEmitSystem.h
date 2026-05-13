@@ -9,8 +9,8 @@ class ProjectileEmitSystem : public System
 {
 public:
     ProjectileEmitSystem();
-    void SubscribeToEvents(std::unique_ptr<EventManager>& InEventManager);
+    void SubscribeToEvents(const std::unique_ptr<EventManager>& InEventManager);
     void OnKeyPressed(KeyPressedEvent& Event);
-    void Update(std::unique_ptr<ECSManager>& ECSManagerInstance);
+    void Update(const std::unique_ptr<ECSManager>& ECSManagerInstance);
     
 };

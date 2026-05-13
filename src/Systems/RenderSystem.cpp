@@ -47,8 +47,22 @@ void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetMan
     // Loop all the entities that the system is interested in
     for (const Entity& InEntity : Entities)
     {
+        
         const FTransformComponent& Transform = InEntity.GetComponent<FTransformComponent>();
         const FSpriteComponent& Sprite = InEntity.GetComponent<FSpriteComponent>();
+        
+        bool bIsEntityOutsideCameraView = !Sprite.bIsFixed &&
+        (
+            Transform.Position.x + (Sprite.SourceRectangle.w * Transform.Scale.x) < Camera.x ||
+            Transform.Position.x > Camera.x + Camera.w ||
+            Transform.Position.y + (Sprite.SourceRectangle.h * Transform.Scale.y) < Camera.y ||
+            Transform.Position.y > Camera.y + Camera.h
+        );
+
+        if (bIsEntityOutsideCameraView)
+        {
+            continue;
+        }
         
         // Set the source rectangle of our original sprite texture
         SDL_Rect SourceRect = Sprite.SourceRectangle;
@@ -61,7 +75,7 @@ void RenderSystem::Update(SDL_Renderer* Renderer, const std::unique_ptr<AssetMan
             static_cast<int>(Sprite.SourceRectangle.h * Transform.Scale.y)
         };
         
-        SDL_RenderCopyEx(Renderer, AssetManagerInstance->GetTexture(Sprite.AssetID), &SourceRect, &DestinationRect, Transform.Rotation, NULL, SDL_FLIP_NONE);
+        SDL_RenderCopyEx(Renderer, AssetManagerInstance->GetTexture(Sprite.AssetID), &SourceRect, &DestinationRect, Transform.Rotation, NULL, Sprite.Flip);
         
     }
 }

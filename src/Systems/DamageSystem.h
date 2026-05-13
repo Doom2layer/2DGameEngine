@@ -8,7 +8,7 @@ class DamageSystem : public System
 public:
     DamageSystem();
     
-    void SubscribeToEvents(std::unique_ptr<EventManager>& InEventManager);
+    void SubscribeToEvents(const std::unique_ptr<EventManager>& InEventManager);
     
     void OnCollision(CollisionEvent& Event);
     

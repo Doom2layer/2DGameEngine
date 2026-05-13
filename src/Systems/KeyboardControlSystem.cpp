@@ -13,7 +13,7 @@ KeyboardControlSystem::KeyboardControlSystem()
     RequireComponent<FRigidBodyComponent>();
 }
 
-void KeyboardControlSystem::SubscribeToEvent(std::unique_ptr<EventManager>& EventManager)
+void KeyboardControlSystem::SubscribeToEvent(const std::unique_ptr<EventManager>& EventManager)
 {
     EventManager->SubscribeToEvent<KeyPressedEvent>(this, &KeyboardControlSystem::OnKeyPressed);
 }

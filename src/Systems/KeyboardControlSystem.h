@@ -7,7 +7,7 @@ class KeyboardControlSystem : public System
 {
 public:
     KeyboardControlSystem();
-    void SubscribeToEvent(std::unique_ptr<EventManager>& EventManager);
+    void SubscribeToEvent(const std::unique_ptr<EventManager>& EventManager);
     void OnKeyPressed(KeyPressedEvent& Event);
     void Update();
 };

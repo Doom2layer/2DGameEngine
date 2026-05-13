@@ -420,6 +420,7 @@
     <ClInclude Include="src\Events\CollisionEvent.h" />
     <ClInclude Include="src\Events\KeyPressedEvent.h" />
     <ClInclude Include="src\Game\Game.h" />
+    <ClInclude Include="src\Game\LevelLoader.h" />
     <ClInclude Include="src\Logger\Logger.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.h" />
     <ClInclude Include="src\Systems\CollisionSystem2D.h" />
@@ -430,6 +431,7 @@
     <ClInclude Include="src\Systems\ProjectileEmitSystem.h" />
     <ClInclude Include="src\Systems\ProjectileLifeCycleSystem.h" />
     <ClInclude Include="src\Systems\RenderColliderSystem2D.h" />
+    <ClInclude Include="src\Systems\RenderGUISystem.h" />
     <ClInclude Include="src\Systems\RenderHealthBarSystem.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
     <ClInclude Include="src\Systems\RenderTextSystem.h" />
@@ -673,6 +675,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="src\Game\LevelLoader.cpp" />
     <ClCompile Include="src\Logger\Logger.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -761,6 +764,7 @@
     <ClCompile Include="src\Systems\ProjectileEmitSystem.cpp" />
     <ClCompile Include="src\Systems\ProjectileLifeCycleSystem.cpp" />
     <ClCompile Include="src\Systems\RenderColliderSystem2D.cpp" />
+    <ClCompile Include="src\Systems\RenderGUISystem.cpp" />
     <ClCompile Include="src\Systems\RenderHealthBarSystem.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\Systems\RenderTextSystem.cpp" />

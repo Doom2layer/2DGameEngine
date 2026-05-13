@@ -12,7 +12,7 @@ DamageSystem::DamageSystem()
     RequireComponent<F2DBoxColliderComponent>();
 }
 
-void DamageSystem::SubscribeToEvents(std::unique_ptr<EventManager>& InEventManager)
+void DamageSystem::SubscribeToEvents(const std::unique_ptr<EventManager>& InEventManager)
 {
     InEventManager->SubscribeToEvent<CollisionEvent>(this, &DamageSystem::OnCollision);
 }
@@ -22,24 +22,22 @@ void DamageSystem::OnCollision(CollisionEvent& Event)
     Entity A = Event.EntityA;
     Entity B = Event.EntityB;
     
-    Logger::Log("The Damage system received an event collision between entities " + std::to_string(Event.EntityA.GetID()) + " and " + std::to_string(Event.EntityB.GetID()));
-
-    if (A.BelongsToGroup("Projectiles") && B.HasTag("Player"))
+    if (A.BelongsToGroup("Projectiles") && B.HasTag("player"))
     {
         OnProjectileHitPlayer(A, B); // A is the projectile and B is the player    
     }
     
-    if (B.BelongsToGroup("Projectiles") && A.HasTag("Player"))
+    if (B.BelongsToGroup("Projectiles") && A.HasTag("player"))
     {
         OnProjectileHitPlayer(B, A); // B is the projectile and A is the player
     }
     
-    if (A.BelongsToGroup("Projectiles") && B.BelongsToGroup("Enemies"))
+    if (A.BelongsToGroup("Projectiles") && B.BelongsToGroup("enemies"))
     {
         OnProjectileHitEnemey(A, B); // A is the projectile and B is the enemy
     }
     
-    if (B.BelongsToGroup("Projectiles") && A.BelongsToGroup("Enemies"))
+    if (B.BelongsToGroup("Projectiles") && A.BelongsToGroup("enemies"))
     {
         OnProjectileHitEnemey(B, A); // B is the projectile and A is the enemy
     }

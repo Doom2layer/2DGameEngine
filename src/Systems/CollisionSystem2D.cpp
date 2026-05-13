@@ -86,7 +86,6 @@ void CollisionSystem2D::Update(std::unique_ptr<EventManager>& EventManagerInstan
             
             if (bHasCollided)
             {
-                Logger::Log("Collision detected between Entity " + std::to_string(EntityA.GetID()) + " and Entity " + std::to_string(EntityB.GetID()));
                 EventManagerInstance->BroadcastEvent<CollisionEvent>(EntityA, EntityB);
             }
         }

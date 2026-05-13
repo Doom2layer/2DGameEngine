@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 #include <memory>
+#include <sol/sol.hpp>
 
 #include "../AssetManager/AssetManager.h"
 #include "../ECS/ECS.h"
@@ -18,7 +19,6 @@ public:
     ~Game();
     void Initialize();
     void Setup();
-    void LoadLevel(int LevelNumber);
     void Run();
     void ProcessInput();
     void Update();
@@ -36,6 +36,8 @@ private:
     SDL_Window* Window;
     SDL_Renderer* Renderer;
     SDL_Rect Camera;
+    
+    sol::state LuaState;
     
     std::unique_ptr<ECSManager> ECSManagerInstance;
     std::unique_ptr<AssetManager> AssetManagerInstance;

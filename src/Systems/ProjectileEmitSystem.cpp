@@ -16,7 +16,7 @@ ProjectileEmitSystem::ProjectileEmitSystem()
     RequireComponent<FTransformComponent>();
 }
 
-void ProjectileEmitSystem::SubscribeToEvents(std::unique_ptr<EventManager>& InEventManager)
+void ProjectileEmitSystem::SubscribeToEvents(const std::unique_ptr<EventManager>& InEventManager)
 {
     InEventManager->SubscribeToEvent<KeyPressedEvent>(this, &ProjectileEmitSystem::OnKeyPressed);
 }
@@ -58,7 +58,7 @@ void ProjectileEmitSystem::OnKeyPressed(KeyPressedEvent& Event)
                 Projectile.Group("Projectiles");
                 Projectile.AddComponent<FTransformComponent>(ProjectilePosition, glm::vec2(1.0f, 1.0f), 0.0f);
                 Projectile.AddComponent<FRigidBodyComponent>(ProjectileVelocity);
-                Projectile.AddComponent<FSpriteComponent>("Bullet-Image", 4, 4, 0, 0, ERenderLayer::Player, 5);
+                Projectile.AddComponent<FSpriteComponent>("bullet-texture", 4, 4, 0, 0, ERenderLayer::Player, 5);
                 Projectile.AddComponent<F2DBoxColliderComponent>(4, 4, glm::vec2(0.0f, 0.0f));
                 Projectile.AddComponent<FProjectileComponent>(ProjectileEmitterComponent.Duration, ProjectileEmitterComponent.HitPercentDamage, ProjectileEmitterComponent.bIsFriendly);
             }
@@ -66,7 +66,7 @@ void ProjectileEmitSystem::OnKeyPressed(KeyPressedEvent& Event)
     }
 }
 
-void ProjectileEmitSystem::Update(std::unique_ptr<ECSManager>& ECSManagerInstance)
+void ProjectileEmitSystem::Update(const std::unique_ptr<ECSManager>& ECSManagerInstance)
 {
     for (Entity InEntity : GetSystemEntities())
     {
@@ -91,7 +91,7 @@ void ProjectileEmitSystem::Update(std::unique_ptr<ECSManager>& ECSManagerInstanc
             Projectile.Group("Projectiles");
             Projectile.AddComponent<FTransformComponent>(ProjectilePosition, glm::vec2(1.0f, 1.0f), 0.0f);
             Projectile.AddComponent<FRigidBodyComponent>(ProjectileEmitterComponent.Velocity);
-            Projectile.AddComponent<FSpriteComponent>("Bullet-Image", 4, 4, 0, 0, ERenderLayer::Enemy, 5);
+            Projectile.AddComponent<FSpriteComponent>("bullet-texture", 4, 4, 0, 0, ERenderLayer::Enemy, 5);
             Projectile.AddComponent<F2DBoxColliderComponent>(4, 4, glm::vec2(0.0f, 0.0f));
             Projectile.AddComponent<FProjectileComponent>(ProjectileEmitterComponent.Duration, ProjectileEmitterComponent.HitPercentDamage, ProjectileEmitterComponent.bIsFriendly);
             
