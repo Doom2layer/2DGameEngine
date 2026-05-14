@@ -128,7 +128,7 @@ void Game::Setup()
     ECSManagerInstance->GetSystem<ScriptSystem>().CreateLuaBindings(LuaState);
     LevelLoader Loader;
     LuaState.open_libraries(sol::lib::base, sol::lib::math, sol::lib::package, sol::lib::os);
-    Loader.LoadLevel(LuaState, ECSManagerInstance, AssetManagerInstance, 1);
+    Loader.LoadLevel(LuaState, ECSManagerInstance, AssetManagerInstance, 2);
 }
 
 void Game::Run()
