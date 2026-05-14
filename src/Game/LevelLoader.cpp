@@ -14,6 +14,8 @@
 #include <string>
 #include <sol/sol.hpp>
 
+#include "../Components/ScriptComponent.h"
+
 LevelLoader::LevelLoader() {
     Logger::Log("LevelLoader constructor called!");    
 }
@@ -257,6 +259,15 @@ void LevelLoader::LoadLevel(sol::state& LuaState, const std::unique_ptr<ECSManag
                 );
             }
         }
+        
+        // Script
+        sol::optional<sol::table> script = entity["components"]["on_update_script"];
+        if (script != sol::nullopt)
+        {
+            sol::function onUpdateScript = entity["components"]["on_update_script"][0];
+            newEntity.AddComponent<FScriptComponent>(onUpdateScript);
+        }
+        
         i++;
     }
 

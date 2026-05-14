@@ -411,6 +411,7 @@
     <ClInclude Include="src\Components\ProjectileComponent.h" />
     <ClInclude Include="src\Components\ProjectileEmitterComponent.h" />
     <ClInclude Include="src\Components\RigidBodyComponent.h" />
+    <ClInclude Include="src\Components\ScriptComponent.h" />
     <ClInclude Include="src\Components\SpriteComponent.h" />
     <ClInclude Include="src\Components\TextLabelComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
@@ -435,6 +436,7 @@
     <ClInclude Include="src\Systems\RenderHealthBarSystem.h" />
     <ClInclude Include="src\Systems\RenderSystem.h" />
     <ClInclude Include="src\Systems\RenderTextSystem.h" />
+    <ClInclude Include="src\Systems\ScriptSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="2DGameEngine.slnx" />
@@ -589,6 +591,7 @@
     <ClCompile Include="src\Components\ProjectileComponent.cpp" />
     <ClCompile Include="src\Components\ProjectileEmitterComponent.cpp" />
     <ClCompile Include="src\Components\RigidBodyComponent.cpp" />
+    <ClCompile Include="src\Components\ScriptComponent.cpp" />
     <ClCompile Include="src\Components\SpriteComponent.cpp" />
     <ClCompile Include="src\Components\TextLabelComponent.cpp" />
     <ClCompile Include="src\Components\TransformComponent.cpp" />
@@ -768,6 +771,7 @@
     <ClCompile Include="src\Systems\RenderHealthBarSystem.cpp" />
     <ClCompile Include="src\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\Systems\RenderTextSystem.cpp" />
+    <ClCompile Include="src\Systems\ScriptSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitattributes" />

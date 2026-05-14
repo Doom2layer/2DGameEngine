@@ -1,3 +1,9 @@
+local currentSystemHour = os.date("*t").hour
+local mapTextureAssetId = "tilemap-texture-day"
+if currentSystemHour >= 18 or currentSystemHour < 6 then
+    mapTextureAssetId = "tilemap-texture-night"
+end
+
 -- Define a table with the start values of the first level
 Level = {
     ----------------------------------------------------
@@ -5,7 +11,8 @@ Level = {
     ----------------------------------------------------
     assets = {
         [0] =
-        { type = "texture", id = "tilemap-texture",             file = "./assets/tilemaps/jungle.png" },
+        { type = "texture", id = "tilemap-texture-day",             file = "./assets/tilemaps/jungle.png" },
+        { type = "texture", id = "tilemap-texture-night",             file = "./assets/tilemaps/jungle-night.png" },
         { type = "texture", id = "chopper-texture",             file = "./assets/images/chopper-green-spritesheet.png" },
         { type = "texture", id = "su27-texture",                file = "./assets/images/su27-spritesheet.png" },
         { type = "texture", id = "f22-texture",                 file = "./assets/images/f22-spritesheet.png" },
@@ -86,7 +93,7 @@ Level = {
     ----------------------------------------------------
     tilemap = {
         map_file = "./assets/tilemaps/jungle.map",
-        texture_asset_id = "tilemap-texture",
+        texture_asset_id = mapTextureAssetId,
         num_rows = 20,
         num_cols = 25,
         tile_size = 32,
@@ -2862,7 +2869,6 @@ Level = {
                 }
             }
         },
-        --[[
         {
             -- SU-27 fighter jet
             group = "enemies",
@@ -2879,7 +2885,8 @@ Level = {
                     texture_asset_id = "su27-texture",
                     width = 32,
                     height = 32,
-                    z_index = 5
+                    z_index = 5,
+                    render_layer = ERenderLayer.Enemy
                 },
                 animation = {
                     num_frames = 2,
@@ -2902,7 +2909,7 @@ Level = {
                 on_update_script = {
                     [0] =
                     function(entity, delta_time, ellapsed_time)
-                        -- print("Executing the SU-27 fighter jet Lua script!")
+                        print("Executing the SU-27 fighter jet Lua script!")
 
                         -- this function makes the fighter jet move up and down the map shooting projectiles
                         local current_position_x, current_position_y = get_position(entity)
@@ -2943,7 +2950,8 @@ Level = {
                     texture_asset_id = "f22-texture",
                     width = 32,
                     height = 32,
-                    z_index = 5
+                    z_index = 5,
+                    render_layer = ERenderLayer.Enemy
                 },
                 animation = {
                     num_frames = 2,
@@ -2958,7 +2966,7 @@ Level = {
                 },
                 projectile_emitter = {
                     projectile_velocity = { x = 200, y = 0 },
-                    projectile_duration = 1, -- secondsm
+                    projectile_duration = 1, -- seconds
                     repeat_frequency = 1, -- seconds
                     hit_percentage_damage = 10,
                     friendly = false
@@ -2966,7 +2974,7 @@ Level = {
                 on_update_script = {
                     [0] =
                     function(entity, delta_time, ellapsed_time)
-                        -- print("Executing BF-109 Lua script!")
+                        print("Executing F-22 Lua script!")
 
                         -- change the position of the the airplane to follow a sine wave movement
                         local new_x = ellapsed_time * 0.09
@@ -2976,7 +2984,6 @@ Level = {
                 }
             }
         }
-        --]]
     }
 }
 

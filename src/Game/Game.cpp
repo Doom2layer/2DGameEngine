@@ -23,6 +23,7 @@
 #include <imgui/imgui_impl_sdl.h>
 
 #include "LevelLoader.h"
+#include "../Systems/ScriptSystem.h"
 
 
 int Game::WindowWidth;
@@ -121,9 +122,12 @@ void Game::Setup()
     ECSManagerInstance->AddSystem<RenderTextSystem>();
     ECSManagerInstance->AddSystem<RenderHealthBarSystem>();
     ECSManagerInstance->AddSystem<RenderGUISystem>();
+    ECSManagerInstance->AddSystem<ScriptSystem>();
     
+    
+    ECSManagerInstance->GetSystem<ScriptSystem>().CreateLuaBindings(LuaState);
     LevelLoader Loader;
-    LuaState.open_libraries(sol::lib::base, sol::lib::math, sol::lib::package);
+    LuaState.open_libraries(sol::lib::base, sol::lib::math, sol::lib::package, sol::lib::os);
     Loader.LoadLevel(LuaState, ECSManagerInstance, AssetManagerInstance, 1);
 }
 
@@ -211,6 +215,7 @@ void Game::Update()
     ECSManagerInstance->GetSystem<CollisionSystem2D>().Update(EventManagerInstance);
     ECSManagerInstance->GetSystem<ProjectileEmitSystem>().Update(ECSManagerInstance);
     ECSManagerInstance->GetSystem<ProjectileLifeCycleSystem>().Update();
+    ECSManagerInstance->GetSystem<ScriptSystem>().Update(DeltaTime, MilliSecondsPreviousFrame);
 }
 
 void Game::Render()
