@@ -4,7 +4,7 @@
 
 size_t IComponent::NextID = 0;
 
-Entity::Entity(size_t InID) : ID(InID)
+Entity::Entity(size_t InID) : ID(InID), Manager(nullptr)
 {
 }
 
@@ -127,13 +127,22 @@ void ECSManager::RemoveEntityFromSystems(Entity InEntity)
 
 void ECSManager::TagEntity(Entity InEntity, const std::string& Tag)
 {
+  RemoveEntityTag(InEntity);
+
+  const auto ExistingTag = EntityPerTag.find(Tag);
+  if (ExistingTag != EntityPerTag.end())
+  {
+    TagPerEntity.erase(static_cast<int>(ExistingTag->second.GetID()));
+    EntityPerTag.erase(ExistingTag);
+  }
+
     EntityPerTag.emplace(Tag, InEntity);
     TagPerEntity.emplace(InEntity.GetID(), Tag);
 }
 
 bool ECSManager::EntityHasTag(Entity InEntity, const std::string& Tag) const
 {
-    const auto IT = TagPerEntity.find(InEntity.GetID());
+    const auto IT = TagPerEntity.find(static_cast<int>(InEntity.GetID()));
     if (IT == TagPerEntity.end())
     {
         return false;
@@ -154,12 +163,23 @@ Entity ECSManager::GetEntityByTag(const std::string& Tag) const
 
 void ECSManager::RemoveEntityTag(Entity InEntity)
 {
-    const auto IT = TagPerEntity.find(InEntity.GetID());
+    const auto IT = TagPerEntity.find(static_cast<int>(InEntity.GetID()));
     if (IT != TagPerEntity.end())
     {
         EntityPerTag.erase(IT->second);
         TagPerEntity.erase(IT);
     }
+}
+
+std::string ECSManager::GetEntityTag(Entity InEntity) const
+{
+  const auto IT = TagPerEntity.find(static_cast<int>(InEntity.GetID()));
+  if (IT == TagPerEntity.end())
+  {
+    return {};
+  }
+
+  return IT->second;
 }
 
 void ECSManager::GroupEntity(Entity InEntity, const std::string& Group)
@@ -188,9 +208,31 @@ std::vector<Entity> ECSManager::GetEntitiesByGroup(const std::string& Group) con
     return std::vector<Entity>(IT->second.begin(), IT->second.end());
 }
 
+std::vector<Entity> ECSManager::GetAllEntities() const
+{
+  std::vector<Entity> Result;
+  Result.reserve(EntityComponentSignatures.size());
+
+  for (size_t EntityID = 0; EntityID < EntityComponentSignatures.size(); ++EntityID)
+  {
+    const bool bHasComponents = EntityComponentSignatures[EntityID].any();
+    const bool bHasTag = TagPerEntity.find(static_cast<int>(EntityID)) != TagPerEntity.end();
+    const bool bHasGroup = GroupPerEntity.find(static_cast<int>(EntityID)) != GroupPerEntity.end();
+
+    if (bHasComponents || bHasTag || bHasGroup)
+    {
+      Entity InEntity(EntityID);
+      InEntity.Manager = const_cast<ECSManager*>(this);
+      Result.push_back(InEntity);
+    }
+  }
+
+  return Result;
+}
+
 void ECSManager::RemoveEntityGroup(Entity InEntity)
 {
-    const auto GroupIT = GroupPerEntity.find(InEntity.GetID());
+    const auto GroupIT = GroupPerEntity.find(static_cast<int>(InEntity.GetID()));
     if (GroupIT == GroupPerEntity.end())
     {
         return;

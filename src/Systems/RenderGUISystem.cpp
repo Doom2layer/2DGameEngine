@@ -6,12 +6,9 @@
 #include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/HealthComponent.h"
 #include <imgui/imgui.h>
-#include <imgui/imgui_sdl.h>
 
 void RenderGUISystem::Update(const std::unique_ptr<ECSManager>& ECSManagerInstance, const SDL_Rect& Camera)
 {
-    ImGui::NewFrame();
-    
     if (ImGui::Begin("Spawn Enemies"))
     {
         static int EnemyPositionX       = 0;
@@ -105,10 +102,9 @@ void RenderGUISystem::Update(const std::unique_ptr<ECSManager>& ECSManagerInstan
     ImGui::SetNextWindowBgAlpha(0.9f);
     if (ImGui::Begin("Map Position", NULL, WindowFlags))
     {
-        ImGui::Text("Mouse Position: (x=%.1f, y=%.1f)", ImGui::GetIO().MousePos.x + Camera.x, ImGui::GetIO().MousePos.y + Camera.y);
+        const float MouseX = ImGui::GetIO().MousePos.x + static_cast<float>(Camera.x);
+        const float MouseY = ImGui::GetIO().MousePos.y + static_cast<float>(Camera.y);
+        ImGui::Text("Mouse Position: (x=%.1f, y=%.1f)", MouseX, MouseY);
     }
     ImGui::End();
-    
-    ImGui::Render();
-    ImGuiSDL::Render(ImGui::GetDrawData());
 }

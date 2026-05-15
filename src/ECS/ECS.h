@@ -3,7 +3,6 @@
 #include <bitset>
 #include <cassert>
 #include <deque>
-#include <iostream>
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
@@ -79,7 +78,7 @@ public:
     bool operator<(const Entity& OtherEntity) const { return ID < OtherEntity.ID; }
     bool operator>(const Entity& OtherEntity) const { return ID > OtherEntity.ID; }
     
-    ECSManager* Manager; // Pointer to the ECSManager to allow entities to add/remove components and interact with systems
+    ECSManager* Manager{ nullptr }; // Pointer to the ECSManager to allow entities to add/remove components and interact with systems
     
 private:
     size_t ID;
@@ -249,6 +248,7 @@ public:
     void TagEntity(Entity InEntity, const std::string& Tag);
     bool EntityHasTag(Entity InEntity, const std::string& Tag) const;
     Entity GetEntityByTag(const std::string& Tag) const;
+    std::string GetEntityTag(Entity InEntity) const;
     void RemoveEntityTag(Entity InEntity);
     
     //Group Management
@@ -256,6 +256,9 @@ public:
     bool EntityBelongsToGroup(Entity InEntity, const std::string& Group) const;
     std::vector<Entity> GetEntitiesByGroup(const std::string& Group) const;
     void RemoveEntityGroup(Entity InEntity);
+
+    //Scene overview for the editor
+    std::vector<Entity> GetAllEntities() const;
     
     
 private:

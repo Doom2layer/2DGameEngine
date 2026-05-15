@@ -6,6 +6,7 @@
 
 #include "../AssetManager/AssetManager.h"
 #include "../ECS/ECS.h"
+#include "../Editor/Editor.h"
 #include "../EventManager/EventManager.h"
 
 
@@ -33,15 +34,22 @@ public:
     
 private:
     // 8-byte types
-    SDL_Window* Window;
-    SDL_Renderer* Renderer;
-    SDL_Rect Camera;
+    SDL_Window* Window{ nullptr };
+    SDL_Renderer* Renderer{ nullptr };
+    SDL_Texture* ViewportTexture{ nullptr };
+    SDL_Rect Camera{};
     
     sol::state LuaState;
     
     std::unique_ptr<ECSManager> ECSManagerInstance;
     std::unique_ptr<AssetManager> AssetManagerInstance;
+    std::unique_ptr<Editor> EditorInstance;
     std::unique_ptr<EventManager> EventManagerInstance;
+    Editor::PlayState LastEditorPlayState{ Editor::PlayState::Stopped };
+
+    void BuildScene();
+    void EnsureViewportTexture();
+    void DestroyViewportTexture();
     
     // 4-byte types
     int MilliSecondsPreviousFrame{0};

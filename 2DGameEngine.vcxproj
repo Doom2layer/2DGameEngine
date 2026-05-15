@@ -416,6 +416,10 @@
     <ClInclude Include="src\Components\TextLabelComponent.h" />
     <ClInclude Include="src\Components\TransformComponent.h" />
     <ClInclude Include="src\ECS\ECS.h" />
+    <ClInclude Include="src\Editor\Editor.h" />
+    <ClInclude Include="src\Editor\Panels\Inspector\InspectorPanel.h" />
+    <ClInclude Include="src\Editor\Panels\ViewPort\ViewPortPanel.h" />
+    <ClInclude Include="src\Editor\Panels\WorldOutliner\WorldOutlinerPanel.h" />
     <ClInclude Include="src\EventManager\Event.h" />
     <ClInclude Include="src\EventManager\EventManager.h" />
     <ClInclude Include="src\Events\CollisionEvent.h" />
@@ -596,6 +600,10 @@
     <ClCompile Include="src\Components\TextLabelComponent.cpp" />
     <ClCompile Include="src\Components\TransformComponent.cpp" />
     <ClCompile Include="src\ECS\ECS.cpp" />
+    <ClCompile Include="src\Editor\Editor.cpp" />
+    <ClCompile Include="src\Editor\Panels\Inspector\InspectorPanel.cpp" />
+    <ClCompile Include="src\Editor\Panels\ViewPort\ViewPortPanel.cpp" />
+    <ClCompile Include="src\Editor\Panels\WorldOutliner\WorldOutlinerPanel.cpp" />
     <ClCompile Include="src\EventManager\Event.cpp" />
     <ClCompile Include="src\EventManager\EventManager.cpp" />
     <ClCompile Include="src\Events\CollisionEvent.cpp" />
@@ -777,6 +785,10 @@
     <Content Include=".gitattributes" />
     <Content Include=".gitignore" />
     <Content Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\Editor\Panels\AssetBrowser\" />
+    <Folder Include="src\Editor\Panels\TileEditor\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
