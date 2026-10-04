@@ -360,7 +360,7 @@ void Game::BuildScene()
     LuaState.open_libraries(sol::lib::base, sol::lib::math, sol::lib::package, sol::lib::os);
 
     LevelLoader Loader;
-    Loader.LoadLevel(LuaState, ECSManagerInstance, AssetManagerInstance, 2);
+    Loader.LoadLevel(LuaState, ECSManagerInstance, AssetManagerInstance, 1);
     ECSManagerInstance->Update();
 
     if (EditorInstance)
